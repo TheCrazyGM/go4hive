@@ -1,9 +1,9 @@
 {% extends "gopher/base.html" %}
 
 {% block content %}
-<h2>User Profile: @{{ account.name }}</h2>
+    <h2>User Profile: @{{ account.name }}</h2>
 
-<div class="account-info">
+    <div class="account-info">
 <pre>
 REPUTATION: {{ account.reputation|stringformat:".2f" }}
 POST COUNT: {{ account.post_count }}
@@ -12,24 +12,24 @@ JOINED: {{ account.created }}
 ABOUT:
 {{ account.about }}
 </pre>
-</div>
-
-<h3>Recent Blog Posts</h3>
-{% if posts %}
-    {% for post in posts %}
-    <div class="menu-item">
-        <span class="selector">{{ forloop.counter }}.</span>
-        <a href="/post/{{ post.authorperm }}">{{ post.title }}</a>
-        <div style="margin-left: 30px; font-size: 0.9em; color: var(--dim-color);">
-            {{ post.created }} | Votes: {{ post.net_votes }} | Comments: {{ post.children }}
-        </div>
     </div>
-    {% endfor %}
-{% else %}
-    <p>NO POSTS FOUND FOR THIS USER.</p>
-{% endif %}
 
-<div style="margin-top: 30px;">
-    [ <a href="/search">NEW SEARCH</a> ] [ <a href="/">BACK TO MENU</a> ]
-</div>
+    <h3>Recent Blog Posts</h3>
+    {% if posts %}
+        {% for post in posts %}
+            <div class="menu-item">
+                <span class="selector">{{ forloop.counter }}.</span>
+                <a href="/post/{{ post.authorperm }}">{{ post.title }}</a>
+                <div style="margin-left: 30px; font-size: 0.9em; color: var(--dim-color);">
+                    {{ post.created }} | Votes: {{ post.net_votes }} | Comments: {{ post.children }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>NO POSTS FOUND FOR THIS USER.</p>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        [ <a href="/search">NEW SEARCH</a> ] [ <a href="/">BACK TO MENU</a> ]
+    </div>
 {% endblock %}

@@ -1,21 +1,21 @@
 {% extends "gopher/base.html" %}
 
 {% block content %}
-<h2>Search / Navigate</h2>
+    <h2>Search / Navigate</h2>
 
-<form method="GET" action="/search/">
-    <label for="q">ENTER @USER OR #TAG:</label><br>
-    <input type="text" id="q" name="q" style="background: var(--bg-color); color: var(--text-color); border: 1px solid var(--text-color); font-family: var(--font-family); padding: 5px;" autofocus>
-    <input type="submit" value="[ EXECUTE ]" style="background: var(--text-color); color: var(--bg-color); border: none; font-family: var(--font-family); padding: 5px; cursor: pointer;">
-</form>
+    <form method="GET" action="/search/">
+        <label for="q">ENTER @USER OR #TAG:</label><br>
+        <input type="text" id="q" name="q" style="background: var(--bg-color); color: var(--text-color); border: 1px solid var(--text-color); font-family: var(--font-family); padding: 5px;" autofocus>
+        <input type="submit" value="[ EXECUTE ]" style="background: var(--text-color); color: var(--bg-color); border: none; font-family: var(--font-family); padding: 5px; cursor: pointer;">
+    </form>
 
-{% if error %}
-<div style="margin-top: 20px; color: #ff0000;">
-    ERROR: {{ error }}
-</div>
-{% endif %}
+    {% if error %}
+        <div style="margin-top: 20px; color: #ff0000;">
+            ERROR: {{ error }}
+        </div>
+    {% endif %}
 
-<div style="margin-top: 30px;">
-    [ <a href="/">BACK TO MENU</a> ]
-</div>
+    <div style="margin-top: 30px;">
+        [ <a href="/">BACK TO MENU</a> ]
+    </div>
 {% endblock %}
