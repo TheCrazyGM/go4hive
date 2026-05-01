@@ -1,0 +1,34 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+<div class="post-header">
+    <h2>{{ post.title }}</h2>
+    <div style="color: var(--dim-color); margin-bottom: 20px;">
+        BY: @{{ post.author }} | CREATED: {{ post.created }} | VOTES: {{ post.net_votes }} | PAYOUT: ${{ post.payout|stringformat:".2f" }}
+    </div>
+</div>
+
+<div class="post-body">
+    <pre>{{ post.body }}</pre>
+</div>
+
+<hr style="border: 1px dashed var(--dim-color); margin: 30px 0;">
+
+<h3>Replies</h3>
+{% if replies %}
+    {% for reply in replies %}
+    <div class="reply" style="margin-bottom: 20px; border-left: 2px solid var(--dim-color); padding-left: 15px;">
+        <div style="color: var(--dim-color); font-size: 0.9em;">
+            @{{ reply.author }} | {{ reply.created }} | Votes: {{ reply.net_votes }}
+        </div>
+        <pre>{{ reply.body }}</pre>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>NO REPLIES FOUND.</p>
+{% endif %}
+
+<div style="margin-top: 30px;">
+    [ <a href="/trending">BACK TO TRENDING</a> ] [ <a href="/">BACK TO MENU</a> ]
+</div>
+{% endblock %}

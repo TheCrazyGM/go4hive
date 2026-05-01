@@ -1,0 +1,23 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+<h2>{{ title }} Discussions</h2>
+
+{% if posts %}
+    {% for post in posts %}
+    <div class="menu-item">
+        <span class="selector">{{ forloop.counter }}.</span>
+        <a href="/post/{{ post.authorperm }}">{{ post.title }}</a>
+        <div style="margin-left: 30px; font-size: 0.9em; color: var(--dim-color);">
+            By: @{{ post.author }} | Votes: {{ post.net_votes }} | Comments: {{ post.children }} | Payout: ${{ post.payout|stringformat:".2f" }}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>ERROR: NO DISCUSSIONS FOUND. CHECK BLOCKCHAIN CONNECTION.</p>
+{% endif %}
+
+<div style="margin-top: 30px;">
+    [ <a href="/">BACK TO MENU</a> ]
+</div>
+{% endblock %}
