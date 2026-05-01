@@ -8,7 +8,7 @@ from nectar.comment import Comment
 from nectar.account import Account
 from nectar.blockchain import Blockchain
 from nectar.block import Block
-from nectar.witness import WitnessesRankedByVote
+from nectar.witness import Witnesses
 from nectar.market import Market
 from nectar import Hive
 import json
@@ -262,21 +262,34 @@ def get_block_details(block_num):
 
 def get_top_witnesses(limit=20):
     """
-    Fetches the top witnesses ranked by vote.
+    Fetches the active witnesses and sorts them by votes.
+    Using the Witnesses() class ensures we get the current active set.
     """
     try:
         witnesses = []
-        for w in WitnessesRankedByVote(limit=limit):
+        # Witnesses() class correctly identifies the active set
+        all_active = Witnesses()
+        for w in all_active:
+            # Handle vote weight (often represented as a huge integer/string)
+            raw_votes = w.get("votes", 0)
+            try:
+                vote_weight = int(raw_votes)
+            except ValueError, TypeError:
+                vote_weight = 0
+
             witnesses.append(
                 {
                     "owner": w.get("owner"),
-                    "votes": w.get("votes"),
-                    "missed": w.get("total_missed"),
+                    "votes": vote_weight,
+                    "missed": w.get("total_missed", 0),
                     "url": w.get("url"),
                     "signing_key": w.get("signing_key"),
                 }
             )
-        return witnesses
+
+        # Sort descending by votes
+        witnesses.sort(key=lambda x: x["votes"], reverse=True)
+        return witnesses[:limit]
     except Exception as e:
         logger.error(f"Error fetching witnesses: {e}")
         return []

@@ -11,12 +11,13 @@
 - [x] Basic Search functionality (@user and #tag).
 - [x] CI/CD Ready: `prek` / `ruff` / Linting cleanup.
 
-## Phase 3: Extended Exploration (Read-Only)
+## ✅ Phase 3: Extended Exploration (COMPLETED)
+- [x] **Block Explorer:** View latest raw blocks and transaction details.
+- [x] **Witness Leaderboard:** See the top 20 witnesses and their status.
+- [x] **Market Data:** Live HIVE/HBD prices and simple ticker.
+- [x] **Tag Cloud:** A text-based "Gopher-hole" for browsing popular tags.
+- [x] **Content Polishing:** Integrated `bleach` to strip messy HTML from blockchain posts.
 
-- [ ] **Block Explorer:** View latest raw blocks and transaction details.
-- [ ] **Witness Leaderboard:** See the top 20 witnesses and their status.
-- [ ] **Market Data:** Live HIVE/HBD prices and simple ticker.
-- [ ] **Tag Cloud:** A text-based "Gopher-hole" for browsing popular tags.
 
 ## Phase 4: Performance & Polish
 
