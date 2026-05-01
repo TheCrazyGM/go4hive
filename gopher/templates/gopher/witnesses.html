@@ -1,0 +1,22 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+    <h2>Witness Leaderboard</h2>
+
+    <p>TOP 20 WITNESSES BY VOTE WEIGHT</p>
+
+    {% if witnesses %}
+    <pre>
+RANK  OWNER            MISSED  VOTES (VESTS)
+------------------------------------------------------------
+{% for w in witnesses %}{{ forloop.counter|stringformat:"02d" }}    <a href="/user/{{ w.owner }}">@{{ w.owner|stringformat:"-15s" }}</a>  {{ w.missed|stringformat:"-6d" }}  {{ w.votes }}
+{% endfor %}
+    </pre>
+    {% else %}
+        <p>ERROR: COULD NOT RETRIEVE WITNESS DATA.</p>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        [ <a href="/">BACK TO MENU</a> ]
+    </div>
+{% endblock %}

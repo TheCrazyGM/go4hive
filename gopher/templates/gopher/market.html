@@ -1,0 +1,32 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+    <h2>Internal Market (HIVE:HBD)</h2>
+
+    <p>LIVE TICKER DATA FROM THE HIVE DECENTRALIZED EXCHANGE</p>
+
+    {% if ticker %}
+    <pre style="background-color: var(--highlight-color); padding: 20px; border: 1px dashed var(--dim-color);">
+LATEST PRICE:    {{ ticker.latest }}
+LOWEST ASK:      {{ ticker.lowest_ask }}
+HIGHEST BID:     {{ ticker.highest_bid }}
+24H CHANGE:      {{ ticker.percent_change }}%
+HIVE VOLUME:     {{ ticker.hive_volume }}
+HBD VOLUME:      {{ ticker.hbd_volume }}
+    </pre>
+    {% else %}
+        <p>ERROR: COULD NOT RETRIEVE MARKET TICKER.</p>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+    <pre>
+THE HIVE INTERNAL MARKET ALLOWS USERS TO TRADE
+HIVE AND HBD DIRECTLY ON THE BLOCKCHAIN WITH
+ZERO FEES AND 3-SECOND SETTLEMENT.
+    </pre>
+    </div>
+
+    <div style="margin-top: 30px;">
+        [ <a href="/">BACK TO MENU</a> ]
+    </div>
+{% endblock %}

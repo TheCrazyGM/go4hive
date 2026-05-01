@@ -1,0 +1,23 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+    <h2>Block Explorer</h2>
+
+    <p>LATEST HEAD BLOCK: {{ latest }}</p>
+
+    <h3>Recent Blocks</h3>
+    {% if blocks %}
+        {% for block_num in blocks %}
+            <div class="menu-item">
+                <span class="selector">{{ forloop.counter }}.</span>
+                <a href="/block/{{ block_num }}">BLOCK #{{ block_num }}</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>ERROR: COULD NOT RETRIEVE BLOCK DATA.</p>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        [ <a href="/">BACK TO MENU</a> ]
+    </div>
+{% endblock %}

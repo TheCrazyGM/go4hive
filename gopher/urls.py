@@ -9,4 +9,9 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("post/<path:authorperm>/", views.post_detail, name="post_detail"),
     path("user/<str:username>/", views.profile, name="profile"),
+    path("witnesses/", views.witnesses, name="witnesses"),
+    path("market/", views.market, name="market"),
+    path("tags/", views.tags, name="tags"),
+    path("blocks/", views.block_explorer, name="block_explorer"),
+    path("block/<int:block_num>/", views.block_detail, name="block_detail"),
 ]

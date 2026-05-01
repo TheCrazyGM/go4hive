@@ -1,0 +1,23 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+    <h2>Popular Tags</h2>
+
+    <p>SELECT A TAG TO BROWSE RELEVANT DISCUSSIONS</p>
+
+    {% if tags %}
+        <div class="tag-cloud" style="line-height: 2;">
+            {% for tag in tags %}
+                <span class="menu-item">
+                    [ <a href="/search/?q=%23{{ tag }}">#{{ tag }}</a> ]
+                </span>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>ERROR: COULD NOT RETRIEVE TRENDING TAGS.</p>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        [ <a href="/">BACK TO MENU</a> ]
+    </div>
+{% endblock %}

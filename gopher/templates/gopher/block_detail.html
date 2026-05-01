@@ -1,0 +1,23 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+    <h2>Block #{{ hive_block.number }}</h2>
+
+    <div class="block-info">
+<pre>
+BLOCK ID:  {{ hive_block.id }}
+TIMESTAMP: {{ hive_block.timestamp }}
+WITNESS:   @{{ hive_block.witness }}
+TX COUNT:  {{ hive_block.transaction_count }}
+</pre>
+    </div>
+
+    <h3>Raw Block Data</h3>
+    <div style="background-color: var(--highlight-color); padding: 10px; border: 1px solid var(--dim-color); overflow-x: auto;">
+    <pre>{{ hive_block.raw }}</pre>
+    </div>
+
+    <div style="margin-top: 30px;">
+        [ <a href="/blocks">BACK TO EXPLORER</a> ] [ <a href="/">BACK TO MENU</a> ]
+    </div>
+{% endblock %}
