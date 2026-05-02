@@ -89,12 +89,46 @@
                     updateCursor(0, false);
                 }
 
+                // Robust argument parser that respects quotes (shell-style)
+                function parseArgs(input) {
+                    const args = [];
+                    let current = '';
+                    let inQuotes = false;
+                    let quoteChar = '';
+
+                    for (let i = 0; i < input.length; i++) {
+                        const char = input[i];
+                        if ((char === '"' || char === "'") && (i === 0 || input[i-1] !== '\\')) {
+                            if (inQuotes && char === quoteChar) {
+                                inQuotes = false;
+                                args.push(current);
+                                current = '';
+                            } else if (!inQuotes) {
+                                inQuotes = true;
+                                quoteChar = char;
+                            } else {
+                                current += char;
+                            }
+                        } else if (char === ' ' && !inQuotes) {
+                            if (current.length > 0) {
+                                args.push(current);
+                                current = '';
+                            }
+                        } else {
+                            current += char;
+                        }
+                    }
+                    if (current.length > 0) args.push(current);
+                    return args;
+                }
+
                 // Command Parser
                 function executeCommand(rawCmd) {
-                    const parts = rawCmd.trim().toLowerCase().split(' ');
-                    const command = parts[0];
-                    const args = parts.slice(1);
+                    const parts = parseArgs(rawCmd.trim());
+                    if (parts.length === 0) return;
 
+                    const command = parts[0].toLowerCase();
+                    const args = parts.slice(1);
                     console.log(`Executing: ${command}`, args);
 
                     switch(command) {
