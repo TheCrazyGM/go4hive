@@ -33,5 +33,73 @@
             <p>BLOCKCHAIN: Hive (via hive-nectar)</p>
             <p>DATE: {% now "Y-m-d H:i:s" %} UTC</p>
         </footer>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                let selectedIndex = -1;
+                const mainLinks = Array.from(document.querySelectorAll('main a'));
+
+                function updateCursor(newIndex) {
+                    if (mainLinks.length === 0) return;
+
+                    // Remove existing cursor
+                    if (selectedIndex >= 0) {
+                        mainLinks[selectedIndex].classList.remove('terminal-cursor');
+                    }
+
+                    // Clamp index
+                    selectedIndex = Math.max(0, Math.min(newIndex, mainLinks.length - 1));
+
+                    // Add new cursor
+                    const selected = mainLinks[selectedIndex];
+                    selected.classList.add('terminal-cursor');
+                    selected.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // Initialize cursor on first link if it exists
+                if (mainLinks.length > 0) {
+                    updateCursor(0);
+                }
+
+                document.addEventListener('keydown', (e) => {
+                    // Disable shortcuts when typing in search fields
+                    if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+                    // Number Keys (1-9) for direct jumps
+                    if (e.key >= '1' && e.key <= '9') {
+                        const shortcut = document.querySelector(`[data-key="${e.key}"]`);
+                        if (shortcut) shortcut.click();
+                    }
+
+                    // Arrow Navigation
+                    switch(e.key) {
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            updateCursor(selectedIndex + 1);
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            updateCursor(selectedIndex - 1);
+                            break;
+                        case 'ArrowLeft':
+                            history.back();
+                            break;
+                        case 'ArrowRight':
+                            history.forward();
+                            break;
+                        case 'Enter':
+                            if (selectedIndex >= 0) {
+                                mainLinks[selectedIndex].click();
+                            }
+                            break;
+                        case 'h': // Home shortcut
+                        case 'H':
+                            window.location.href = '/';
+                            break;
+                    }
+                });
+            });
+        </script>
     </body>
+
 </html>

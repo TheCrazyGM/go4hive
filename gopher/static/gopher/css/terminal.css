@@ -66,9 +66,23 @@ a:hover {
     color: var(--bg-color);
 }
 
+.terminal-cursor {
+    background-color: var(--text-color) !important;
+    color: var(--bg-color) !important;
+    outline: none;
+}
+
+/* Add a > character before the selected item using pseudo-elements */
+.terminal-cursor::before {
+    content: "> ";
+    position: absolute;
+    margin-left: -20px;
+}
+
 .menu-item {
     margin: 5px 0;
     word-wrap: break-word;
+    position: relative; /* For the cursor arrow positioning */
 }
 
 .selector {
