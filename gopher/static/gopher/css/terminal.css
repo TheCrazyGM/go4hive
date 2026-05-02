@@ -72,18 +72,9 @@ a:hover {
     outline: none;
 }
 
-/* Add a > character before the selected item using pseudo-elements */
-.terminal-cursor::before {
-    content: "> ";
-    position: absolute;
-    margin-left: -20px;
-    color: var(--text-color) !important;
-}
-
 .menu-item {
     margin: 5px 0;
     word-wrap: break-word;
-    position: relative; /* For the cursor arrow positioning */
 }
 
 .selector {
