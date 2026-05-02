@@ -131,7 +131,17 @@
                         case 'market':
                             window.location.href = '/market/';
                             break;
+                        case 'wallet':
+                            if (args[0]) {
+                                window.location.href = `/wallet/${args[0].replace('@', '')}/`;
+                            } else if (CURRENT_USER) {
+                                window.location.href = '/wallet/';
+                            } else {
+                                printMsg('HANDSHAKE REQUIRED OR PROVIDE USERNAME: wallet <user>', true);
+                            }
+                            break;
                         case 'help':
+
                             window.location.href = '/help/';
                             break;
                         case 'vote':

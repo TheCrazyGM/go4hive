@@ -1,0 +1,38 @@
+{% extends "gopher/base.html" %}
+
+{% block content %}
+    <h2>Wallet Ledger: @{{ wallet.name }}</h2>
+
+    <div class="wallet-info">
+<pre style="background-color: var(--highlight-color); padding: 20px; border: 1px dashed var(--dim-color);">
+ASSET           BALANCE
+------------------------------------------------------------
+HIVE            {{ wallet.hive }}
+HBD             {{ wallet.hbd }}
+HIVE POWER      {{ wallet.hp }}
+
+SAVINGS
+------------------------------------------------------------
+HIVE            {{ wallet.savings_hive }}
+HBD             {{ wallet.savings_hbd }}
+
+STATS
+------------------------------------------------------------
+REPUTATION      {{ wallet.reputation }}
+VOTING POWER    {{ wallet.voting_power }}
+RESOURCE CREDITS {{ wallet.resource_credits }}
+</pre>
+    </div>
+
+    <div style="margin-top: 30px;">
+    <pre>
+THE HIVE WALLET ALLOWS YOU TO MANAGE YOUR LIQUID
+AND STAKED ASSETS. HIVE POWER (HP) REPRESENTS
+YOUR INFLUENCE AND RESOURCE CREDITS ON THE NETWORK.
+    </pre>
+    </div>
+
+    <div style="margin-top: 30px;">
+        [ <a href="/">BACK TO MENU</a> ]
+    </div>
+{% endblock %}

@@ -451,6 +451,7 @@ def get_block_details(block_num):
 
 
 def get_top_witnesses(limit=20):
+    # ... (existing code)
     cache_key = f"witnesses_{limit}"
     data = cache.get(cache_key)
     if data:
@@ -483,6 +484,40 @@ def get_top_witnesses(limit=20):
     except Exception as e:
         logger.error(f"Error fetching witnesses: {e}")
         return []
+
+
+def get_wallet_data(username):
+    """
+    Fetches comprehensive wallet data for a user.
+    """
+    cache_key = f"wallet_{username}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
+    try:
+        hv = Hive()
+        acc = Account(username, blockchain_instance=hv)
+
+        # Manabar details
+        mana = acc.get_manabar()
+
+        data = {
+            "name": acc.name,
+            "hive": str(acc.get("balance", "0.000 HIVE")),
+            "hbd": str(acc.get("hbd_balance", "0.000 HBD")),
+            "hp": str(acc.get_token_power()),
+            "savings_hive": str(acc.get("savings_balance", "0.000 HIVE")),
+            "savings_hbd": str(acc.get("savings_hbd_balance", "0.000 HBD")),
+            "voting_power": f"{acc.get_voting_power():.2f}%",
+            "resource_credits": f"{mana.get('current_mana_pct', 0):.2f}%",
+            "reputation": f"{acc.rep:.2f}",
+        }
+        cache.set(cache_key, data, 60)  # 1 minute cache for wallet
+        return data
+    except Exception as e:
+        logger.error(f"Error fetching wallet for {username}: {e}")
+        return None
 
 
 def get_market_ticker():

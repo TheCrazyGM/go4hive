@@ -12,6 +12,7 @@ from .services import (
     get_market_ticker,
     get_popular_tags,
     get_random_header,
+    get_wallet_data,
 )
 import urllib.parse
 
@@ -82,6 +83,24 @@ def witnesses(request):
     context = _get_base_context(request)
     context["witnesses"] = get_top_witnesses(limit=20)
     return render(request, "gopher/witnesses.html", context)
+
+
+def wallet(request, username=None):
+    context = _get_base_context(request)
+
+    # If no username provided, use current logged in user
+    target_user = username or context.get("current_user")
+
+    if not target_user:
+        return redirect("index")
+
+    wallet_data = get_wallet_data(target_user)
+    if not wallet_data:
+        context["error"] = f"WALLET FOR @{target_user} NOT FOUND."
+        return render(request, "gopher/search.html", context)
+
+    context["wallet"] = wallet_data
+    return render(request, "gopher/wallet.html", context)
 
 
 def market(request):
