@@ -77,7 +77,7 @@ Visit `http://127.0.0.1:8888` in your browser.
 - [x] Phase 2: Browse Experience (Trending/Hot/Profiles)
 - [x] Phase 3: Extended Exploration (Blocks/Witnesses/Market)
 - [x] Phase 4: Performance & Polish (Caching/Themes/Mobile)
-- [ ] Phase 5: Interactions (Voting/Commenting via Hive Keychain)
+- [x] Phase 5: Interaction (Keychain Login/Voting/Transfers/Posting)
 
 ## 📜 License
 This project is licensed under the MIT License.
