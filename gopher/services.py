@@ -16,19 +16,66 @@ import logging
 import bleach
 import re
 import random
+import markdown
 from django.core.cache import cache
 from .models import HiveCommunity, BlacklistedUser
 
 logger = logging.getLogger(__name__)
 
 
-def bleach_content(text):
+def render_content(text):
     """
-    Strips all HTML tags from the content to keep it text-only.
+    Renders Markdown to minimal HTML, strips images, and bleaches the rest.
+    Keeps the 'Gopher-like' vibe while making text readable.
     """
     if not text:
         return ""
-    return bleach.clean(text, tags=[], strip=True)
+
+    # 1. First, strip any raw HTML tags that were in the original blockchain data
+    # to avoid people injecting malicious stuff or messy layouts.
+    text = bleach.clean(text, tags=[], strip=True)
+
+    # 2. Render Markdown to HTML
+    md = markdown.Markdown(extensions=["extra", "nl2br", "sane_lists"])
+    html = md.convert(text)
+
+    # 3. Use Regex to convert <img> tags to [IMAGE: URL] links
+    # Pattern: <img src="url" alt="alt" ...>
+    html = re.sub(
+        r'<img [^>]*src="([^"]+)"[^>]*>', r'[IMAGE: <a href="\1">\1</a>]', html
+    )
+
+    # 4. Bleach the final HTML to a safe, minimal subset
+    allowed_tags = [
+        "a",
+        "b",
+        "i",
+        "strong",
+        "em",
+        "code",
+        "pre",
+        "ul",
+        "ol",
+        "li",
+        "p",
+        "br",
+        "blockquote",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+    ]
+    allowed_attrs = {
+        "a": ["href", "title"],
+    }
+
+    cleaned_html = bleach.clean(
+        html, tags=allowed_tags, attributes=allowed_attrs, strip=True
+    )
+
+    return cleaned_html
 
 
 def get_blacklist():
@@ -192,7 +239,7 @@ def get_post_details(authorperm):
         "author": c.get("author"),
         "permlink": c.get("permlink"),
         "title": c.get("title"),
-        "body": bleach_content(c.get("body")),
+        "body": render_content(c.get("body")),
         "created": c.get("created"),
         "net_votes": votes,
         "authorperm": c.get("authorperm"),
@@ -214,7 +261,7 @@ def get_post_details(authorperm):
         replies.append(
             {
                 "author": r_author,
-                "body": bleach_content(reply.get("body")),
+                "body": render_content(reply.get("body")),
                 "created": reply.get("created"),
                 "net_votes": r_votes,
                 "authorperm": reply.get("authorperm"),
@@ -269,7 +316,7 @@ def get_account_info(username):
             "post_count": acc.get("post_count"),
             "reputation": acc.get_reputation(),
             "created": acc.get("created"),
-            "about": bleach_content(profile.get("about", "NO DATA")),
+            "about": render_content(profile.get("about", "NO DATA")),
         }
         cache.set(cache_key, data, 300)
         return data

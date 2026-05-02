@@ -8,4 +8,5 @@ dependencies = [
     "bleach>=6.3.0",
     "django>=6.0.4",
     "hive-nectar>=0.2.15",
+    "markdown>=3.10.2",
 ]

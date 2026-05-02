@@ -4,16 +4,17 @@
     <h2>User Profile: @{{ account.name }}</h2>
 
     <div class="account-info">
-<pre>
-REPUTATION: {{ account.reputation|stringformat:".2f" }}
-POST COUNT: {{ account.post_count }}
-JOINED: {{ account.created }}
+    <pre>
+    REPUTATION: {{ account.reputation|stringformat:".2f" }}
+    POST COUNT: {{ account.post_count }}
+    JOINED: {{ account.created }}
 
-ABOUT:
-{{ account.about }}
-</pre>
+    ABOUT:
+    </pre>
+        <div class="about-content" style="margin-bottom: 20px;">
+            {{ account.about|safe }}
+        </div>
     </div>
-
     <h3>Recent Blog Posts</h3>
     {% if posts %}
         {% for post in posts %}
