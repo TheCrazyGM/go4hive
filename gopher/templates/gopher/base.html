@@ -141,7 +141,6 @@
                             }
                             break;
                         case 'help':
-
                             window.location.href = '/help/';
                             break;
                         case 'vote':
@@ -151,12 +150,57 @@
                             }
                             handleVote(args[0]);
                             break;
+                        case 'transfer':
+                            if (!CURRENT_USER || CURRENT_USER === 'None') {
+                                printMsg('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.', true);
+                                return;
+                            }
+                            if (args.length < 2) {
+                                printMsg('USAGE: transfer <to> <amount> [currency] [memo]', true);
+                                return;
+                            }
+                            handleTransfer(args);
+                            break;
                         default:
                             printMsg(`UNKNOWN COMMAND: ${command}`, true);
                     }
                 }
 
+                function handleTransfer(args) {
+                    if (!window.hive_keychain) {
+                        printMsg('HIVE KEYCHAIN EXTENSION NOT FOUND.', true);
+                        return;
+                    }
+
+                    const to = args[0].replace('@', '');
+                    let amount = args[1];
+                    let currency = 'HIVE';
+                    let memo = '';
+
+                        // Check if 3rd arg is currency or start of memo
+                    if (args[2] && ['HIVE', 'HBD'].includes(args[2].toUpperCase())) {
+                        currency = args[2].toUpperCase();
+                        memo = args.slice(3).join(' ');
+                    } else {
+                        memo = args.slice(2).join(' ');
+                    }
+
+                        // Remove quotes from memo if present
+                    memo = memo.replace(/^["']|["']$/g, '');
+
+                    printMsg(`INITIATING TRANSFER OF ${amount} ${currency} TO @${to}...`);
+
+                    window.hive_keychain.requestTransfer(CURRENT_USER, to, amount, memo, currency, (response) => {
+                        if (response.success) {
+                            printMsg(`SUCCESS: TRANSFERRED ${amount} ${currency} TO @${to}.`);
+                        } else {
+                            printMsg(`TRANSFER FAILED: ${response.message}`, true);
+                        }
+                    });
+                }
+
                 function handleVote(weight) {
+
                     const postHeader = document.querySelector('.post-header');
                     if (!postHeader) {
                         printMsg('ERROR: VOTE COMMAND ONLY VALID INSIDE POST DETAIL VIEW.', true);
