@@ -53,6 +53,10 @@
                 const cmdInput = document.getElementById('cmd-input');
                 const terminalMsg = document.getElementById('terminal-msg');
                 const allLinks = Array.from(document.querySelectorAll('body a'));
+
+                // Set current user as a JS constant (prevents @None issues)
+                const CURRENT_USER = "{{ current_user|default:'' }}";
+
                 let selectedIndex = -1;
                 let msgTimeout = null;
 
@@ -131,7 +135,7 @@
                             window.location.href = '/help/';
                             break;
                         case 'vote':
-                            if (!"{{ current_user }}") {
+                            if (!CURRENT_USER || CURRENT_USER === 'None') {
                                 printMsg('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.', true);
                                 return;
                             }
@@ -160,7 +164,7 @@
 
                     printMsg(`INITIATING VOTE FOR @${author}...`);
 
-                    window.hive_keychain.requestVote("{{ current_user }}", permlink, author, voteWeight, (response) => {
+                    window.hive_keychain.requestVote(CURRENT_USER, permlink, author, voteWeight, (response) => {
                         if (response.success) {
                             printMsg(`SUCCESS: BROADCASTED ${weight || '100'}% VOTE.`);
                         } else {

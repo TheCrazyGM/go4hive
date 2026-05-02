@@ -24,6 +24,10 @@ def _get_base_context(request):
     current_theme = request.session.get("theme", "green")
     current_user = request.session.get("hive_user")
 
+    # Safety: Ensure we don't pass the string "None"
+    if current_user == "None" or not current_user:
+        current_user = None
+
     return {
         "random_header": get_random_header(),
         "current_theme": current_theme,
