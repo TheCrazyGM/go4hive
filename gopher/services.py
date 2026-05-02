@@ -499,8 +499,16 @@ def get_wallet_data(username):
         hv = Hive()
         acc = Account(username, blockchain_instance=hv)
 
-        # Manabar details
-        mana = acc.get_manabar()
+        # Voting Power
+        vp = acc.get_voting_power()
+
+        # Resource Credits (RC) Manabar
+        try:
+            rc_mana = acc.get_rc_manabar()
+            # nectar uses 'current_pct' for RC sometimes, or 'current_mana_pct'
+            rc = rc_mana.get("current_pct") or rc_mana.get("current_mana_pct", 0.0)
+        except Exception:
+            rc = 0.0
 
         data = {
             "name": acc.name,
@@ -509,8 +517,8 @@ def get_wallet_data(username):
             "hp": str(acc.get_token_power()),
             "savings_hive": str(acc.get("savings_balance", "0.000 HIVE")),
             "savings_hbd": str(acc.get("savings_hbd_balance", "0.000 HBD")),
-            "voting_power": f"{acc.get_voting_power():.2f}%",
-            "resource_credits": f"{mana.get('current_mana_pct', 0):.2f}%",
+            "voting_power": f"{vp:.2f}%",
+            "resource_credits": f"{rc:.2f}%",
             "reputation": f"{acc.rep:.2f}",
         }
         cache.set(cache_key, data, 60)  # 1 minute cache for wallet
