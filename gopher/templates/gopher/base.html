@@ -37,21 +37,22 @@
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 let selectedIndex = -1;
-                const mainLinks = Array.from(document.querySelectorAll('main a'));
+                // Select all links in the body to allow full page navigation
+                const allLinks = Array.from(document.querySelectorAll('body a'));
 
                 function updateCursor(newIndex, scroll = true) {
-                    if (mainLinks.length === 0) return;
+                    if (allLinks.length === 0) return;
 
-                // Remove existing cursor
-                    if (selectedIndex >= 0) {
-                        mainLinks[selectedIndex].classList.remove('terminal-cursor');
+                    // Remove existing cursor
+                    if (selectedIndex >= 0 && allLinks[selectedIndex]) {
+                        allLinks[selectedIndex].classList.remove('terminal-cursor');
                     }
 
-                // Clamp index
-                    selectedIndex = Math.max(0, Math.min(newIndex, mainLinks.length - 1));
+                    // Clamp index
+                    selectedIndex = Math.max(0, Math.min(newIndex, allLinks.length - 1));
 
-                // Add new cursor
-                    const selected = mainLinks[selectedIndex];
+                    // Add new cursor
+                    const selected = allLinks[selectedIndex];
                     selected.classList.add('terminal-cursor');
 
                     if (scroll) {
@@ -59,23 +60,22 @@
                     }
                 }
 
-            // Initialize cursor but DON'T scroll to it automatically
-            // This prevents jumping to the bottom on pages with few/distant links
-                if (mainLinks.length > 0) {
+                // Initialize cursor on the first link (likely HOME) but don't scroll
+                if (allLinks.length > 0) {
                     updateCursor(0, false);
                 }
 
                 document.addEventListener('keydown', (e) => {
-                // Disable shortcuts when typing in search fields
+                    // Disable shortcuts when typing in search fields
                     if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
-                // Number Keys (1-9) for direct jumps
+                    // Number Keys (1-9) for direct jumps (matches data-key in index.html)
                     if (e.key >= '1' && e.key <= '9') {
                         const shortcut = document.querySelector(`[data-key="${e.key}"]`);
                         if (shortcut) shortcut.click();
                     }
 
-                // Arrow Navigation
+                    // Arrow Navigation
                     switch(e.key) {
                         case 'ArrowDown':
                             e.preventDefault();
@@ -92,8 +92,8 @@
                             history.forward();
                             break;
                         case 'Enter':
-                            if (selectedIndex >= 0) {
-                                mainLinks[selectedIndex].click();
+                            if (selectedIndex >= 0 && allLinks[selectedIndex]) {
+                                allLinks[selectedIndex].click();
                             }
                             break;
                         case 'h': // Home shortcut
@@ -104,6 +104,7 @@
                 });
             });
         </script>
+
     </body>
 
 </html>
