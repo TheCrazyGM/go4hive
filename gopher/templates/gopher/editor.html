@@ -1,26 +1,25 @@
 {% extends "gopher/base.html" %}
 
 {% block content %}
-    <div id="editor-container" style="display: flex; flex-direction: column; height: 70vh;">
-        <div id="editor-status" style="border-bottom: 1px solid var(--dim-color); padding-bottom: 10px; margin-bottom: 15px;">
-        <pre>GO4HIVE v0.1.1 - [NEW POST] - STATUS: <span id="buffer-status">READY</span></pre>
-            <div style="margin-top: 10px;">
-                <label style="color: var(--dim-color);">TITLE:</label>
-                <input type="text" id="post-title" style="background: transparent; border: 1px dashed var(--dim-color); color: var(--text-color); font-family: var(--font-family); width: 80%; padding: 2px 5px;" placeholder="Enter post title..." autofocus>
+    <div id="editor-container" style="display: flex; flex-direction: column; height: 80vh;">
+        <div id="editor-status" style="border-bottom: 1px solid var(--dim-color); padding-bottom: 5px; margin-bottom: 10px;">
+        <pre style="margin: 0;">GO4HIVE v0.1.1 - [NEW POST] - STATUS: <span id="buffer-status">READY</span></pre>
+            <div style="margin-top: 10px; display: flex; align-items: center;">
+                <label style="color: var(--dim-color); width: 70px; display: inline-block;">TITLE:</label>
+                <input type="text" id="post-title" style="background: transparent; border: none; border-bottom: 1px dashed var(--dim-color); color: var(--text-color); font-family: var(--font-family); flex-grow: 1; padding: 2px 5px; outline: none;" placeholder="Enter post title..." autofocus>
             </div>
-            <div style="margin-top: 10px;">
-                <label style="color: var(--dim-color);">TAGS: </label>
-                <input type="text" id="post-tags" style="background: transparent; border: 1px dashed var(--dim-color); color: var(--text-color); font-family: var(--font-family); width: 80%; padding: 2px 5px;" value="{{ initial_tag }}" placeholder="e.g. hive gaming blog (space separated)">
+            <div style="margin-top: 5px; display: flex; align-items: center;">
+                <label style="color: var(--dim-color); width: 70px; display: inline-block;">TAGS:</label>
+                <input type="text" id="post-tags" style="background: transparent; border: none; border-bottom: 1px dashed var(--dim-color); color: var(--text-color); font-family: var(--font-family); flex-grow: 1; padding: 2px 5px; outline: none;" value="{{ initial_tag }}" placeholder="e.g. hive gaming blog (space separated)">
             </div>
         </div>
 
-        <textarea id="post-body" style="flex-grow: 1; background: transparent; border: 1px solid var(--dim-color); color: var(--text-color); font-family: var(--font-family); font-size: 1.1em; padding: 15px; outline: none; resize: none;" placeholder="Type your story here..."></textarea>
+        <textarea id="post-body" style="flex-grow: 1; background: transparent; border: none; color: var(--text-color); font-family: var(--font-family); font-size: 1.1em; padding: 0; outline: none; resize: none;" placeholder="Type your story here..."></textarea>
 
-        <div id="editor-shortcuts" style="margin-top: 20px; background-color: var(--highlight-color); padding: 10px; font-size: 0.9em; border: 1px solid var(--dim-color);">
-        <pre>^O BROADCAST (Save)   ^X DISCARD & EXIT   ^K CLEAR   ^G HELP</pre>
+        <div id="editor-shortcuts" style="margin-top: 15px; background-color: var(--text-color); color: var(--bg-color); padding: 2px 10px; font-size: 0.9em;">
+        <pre style="margin: 0; color: inherit; background: inherit;">^O BROADCAST (Save)   ^X DISCARD & EXIT   ^K CLEAR   ^G HELP</pre>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const titleInput = document.getElementById('post-title');
