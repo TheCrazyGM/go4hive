@@ -390,10 +390,10 @@ def get_market_ticker():
         return data
 
     try:
+        # Some nodes might be finicky about the pair string, nectar handles it well usually
         m = Market("HIVE:HBD")
         ticker = m.ticker()
 
-        # If ticker is a list (some nodes/versions), take first item
         if isinstance(ticker, list) and len(ticker) > 0:
             ticker = ticker[0]
 
@@ -401,13 +401,14 @@ def get_market_ticker():
             logger.warning(f"Market ticker returned invalid data type: {type(ticker)}")
             return None
 
+        # Explicitly cast Price and Amount objects to strings to avoid template/serialization issues
         data = {
-            "latest": ticker.get("latest"),
-            "lowest_ask": ticker.get("lowest_ask"),
-            "highest_bid": ticker.get("highest_bid"),
-            "percent_change": ticker.get("percent_change"),
-            "hive_volume": ticker.get("hive_volume"),
-            "hbd_volume": ticker.get("hbd_volume"),
+            "latest": str(ticker.get("latest", "0.000")),
+            "lowest_ask": str(ticker.get("lowest_ask", "0.000")),
+            "highest_bid": str(ticker.get("highest_bid", "0.000")),
+            "percent_change": f"{float(ticker.get('percent_change', 0.0)):.2f}",
+            "hive_volume": str(ticker.get("hive_volume", "0.000")),
+            "hbd_volume": str(ticker.get("hbd_volume", "0.000")),
         }
         cache.set(cache_key, data, 30)  # 30 seconds
         return data
