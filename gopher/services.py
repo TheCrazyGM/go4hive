@@ -392,6 +392,15 @@ def get_market_ticker():
     try:
         m = Market("HIVE:HBD")
         ticker = m.ticker()
+
+        # If ticker is a list (some nodes/versions), take first item
+        if isinstance(ticker, list) and len(ticker) > 0:
+            ticker = ticker[0]
+
+        if not ticker or not isinstance(ticker, dict):
+            logger.warning(f"Market ticker returned invalid data type: {type(ticker)}")
+            return None
+
         data = {
             "latest": ticker.get("latest"),
             "lowest_ask": ticker.get("lowest_ask"),
@@ -403,7 +412,7 @@ def get_market_ticker():
         cache.set(cache_key, data, 30)  # 30 seconds
         return data
     except Exception as e:
-        logger.error(f"Error fetching market ticker: {e}")
+        logger.error(f"CRITICAL Error fetching market ticker for HIVE:HBD: {e}")
         return None
 
 

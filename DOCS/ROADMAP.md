@@ -19,12 +19,11 @@
 - [x] **Content Polishing:** Integrated `bleach` to strip messy HTML from blockchain posts.
 
 
-## Phase 4: Performance & Polish
-
-- [ ] **Caching Layer:** Implement Django caching to make page loads instantaneous.
-- [ ] **ASCII Art Refinements:** More randomized terminal headers and ASCII dividers.
-- [ ] **Mobile Responsive:** Ensuring the "Terminal" looks great on phone screens.
-- [ ] **Custom Themes:** CSS toggles for Green/Amber/White CRT modes.
+## ✅ Phase 4: Performance & Polish (COMPLETED)
+- [x] **Caching Layer:** Implemented Django local-memory caching for all blockchain calls.
+- [x] **ASCII Art Refinements:** Randomized terminal headers for variety.
+- [x] **Mobile Responsive:** Added CSS media queries for smaller screens.
+- [x] **Custom Themes:** Added Green, Amber, and White CRT theme toggles.
 
 ## Phase 5: Interaction (Future)
 
