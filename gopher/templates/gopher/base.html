@@ -7,14 +7,9 @@
         <title>{% block title %}Go4Hive{% endblock %}</title>
         <link rel="stylesheet" href="{% static 'gopher/css/terminal.css' %}">
     </head>
-    <body>
+    <body class="theme-{{ current_theme }}">
         <div class="header-art">
-<pre>
-  ____            _  _    _   _ ___ __     __ _____
- / ___|  ___     | || |  | | | |_ _|\ \   / /| ____|
-| |  _  / _ \    | || |_ | |_| || |  \ \ / / |  _|
-| |_| || (_) |   |__   _||  _  || |   \ V /  | |___
- \____| \___/       |_|  |_| |_|___|   \_/   |_____|
+<pre>{{ random_header }}
 
  --- A GOPHER-LIKE INTERFACE FOR HIVE BLOCKCHAIN ---
 </pre>
@@ -22,6 +17,9 @@
 
         <nav>
             [ <a href="/">HOME</a> ] [ <a href="/trending">TRENDING</a> ] [ <a href="/search">SEARCH</a> ]
+            <div style="float: right; font-size: 0.8em;">
+                THEME: [ <a href="?theme=green">GREEN</a> ] [ <a href="?theme=amber">AMBER</a> ] [ <a href="?theme=white">WHITE</a> ]
+            </div>
         </nav>
 
         <main>
@@ -29,7 +27,7 @@
         </main>
 
         <footer>
-            <p>SYSTEM: Go4Hive v0.1.0-alpha</p>
+            <p>SYSTEM: Go4Hive v0.1.1-alpha</p>
             <p>BLOCKCHAIN: Hive (via hive-nectar)</p>
             <p>DATE: {% now "Y-m-d H:i:s" %} UTC</p>
         </footer>

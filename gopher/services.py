@@ -15,6 +15,8 @@ import json
 import logging
 import bleach
 import re
+import random
+from django.core.cache import cache
 from .models import HiveCommunity
 
 logger = logging.getLogger(__name__)
@@ -26,7 +28,6 @@ def bleach_content(text):
     """
     if not text:
         return ""
-    # Bleach with no allowed tags to strip everything
     return bleach.clean(text, tags=[], strip=True)
 
 
@@ -38,14 +39,12 @@ def resolve_tag_name(tag_name):
     if not tag_name:
         return ""
 
-    # Check for hive-XXXXXX pattern
     if re.match(r"^hive-\d+$", tag_name):
         # Check local cache first
         cached = HiveCommunity.objects.filter(identifier=tag_name).first()
         if cached:
             return cached.title or cached.name or tag_name
 
-        # Not in cache, fetch from blockchain using raw bridge API
         try:
             hv = Hive()
             payload = {
@@ -54,17 +53,13 @@ def resolve_tag_name(tag_name):
                 "params": {"name": tag_name},
                 "id": 1,
             }
-
-            # rpcexec in nectar returns the result directly if successful
             res = hv.rpc.rpcexec(payload)
 
             if res and isinstance(res, dict):
                 comm_title = res.get("title")
                 comm_name = res.get("name")
-
                 display_name = comm_title or comm_name or tag_name
 
-                # Save to cache
                 HiveCommunity.objects.create(
                     identifier=tag_name, name=comm_name or tag_name, title=comm_title
                 )
@@ -79,13 +74,27 @@ def resolve_tag_name(tag_name):
 
 
 def get_trending_posts(limit=20, tag=None):
+    cache_key = f"trending_{tag}_{limit}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     q = Query(limit=limit, tag=tag)
-    return _process_discussions(Discussions_by_trending(q))
+    data = _process_discussions(Discussions_by_trending(q))
+    cache.set(cache_key, data, 60)  # 1 minute
+    return data
 
 
 def get_hot_posts(limit=20, tag=None):
+    cache_key = f"hot_{tag}_{limit}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     q = Query(limit=limit, tag=tag)
-    return _process_discussions(Discussions_by_hot(q))
+    data = _process_discussions(Discussions_by_hot(q))
+    cache.set(cache_key, data, 60)
+    return data
 
 
 def _process_discussions(discussions):
@@ -122,11 +131,12 @@ def _process_discussions(discussions):
 
 
 def get_post_details(authorperm):
-    """
-    Fetches details for a single post and its comments.
-    """
-    c = Comment(authorperm)
+    cache_key = f"post_{authorperm}"
+    data = cache.get(cache_key)
+    if data:
+        return data
 
+    c = Comment(authorperm)
     total_payout = (
         extract_payout_amount(c.get("pending_payout_value"))
         + extract_payout_amount(c.get("author_payout_value"))
@@ -141,23 +151,18 @@ def get_post_details(authorperm):
     if votes is None:
         votes = len(c.get("active_votes", []))
 
-    # Handle tags - they can be in 'tags' or 'json_metadata'
     tags = c.get("tags", [])
     if not tags:
-        metadata = c.get("json_metadata", {})
-        if isinstance(metadata, str):
+        meta = c.get("json_metadata", {})
+        if isinstance(meta, str):
             try:
-                metadata = json.loads(metadata)
+                meta = json.loads(meta)
             except Exception:
-                metadata = {}
-        tags = metadata.get("tags", [])
+                meta = {}
+        tags = meta.get("tags", [])
 
-    # Resolve tag names for display
-    resolved_tags = []
-    for t in tags:
-        resolved_tags.append({"raw": t, "display": resolve_tag_name(t)})
+    resolved_tags = [{"raw": t, "display": resolve_tag_name(t)} for t in tags]
 
-    # Process the main post
     post_data = {
         "author": c.get("author"),
         "permlink": c.get("permlink"),
@@ -170,7 +175,6 @@ def get_post_details(authorperm):
         "tags": resolved_tags,
     }
 
-    # Process replies
     replies = []
     for reply in c.get_replies():
         r_stats = reply.get("stats", {})
@@ -188,7 +192,9 @@ def get_post_details(authorperm):
             }
         )
 
-    return post_data, replies
+    result = (post_data, replies)
+    cache.set(cache_key, result, 300)  # 5 minutes
+    return result
 
 
 def extract_payout_amount(value):
@@ -207,40 +213,48 @@ def extract_payout_amount(value):
 
 
 def get_account_info(username):
+    cache_key = f"acc_{username}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     try:
         acc = Account(username)
-
-        # Metadata parsing
         metadata = {}
         raw_metadata = acc.get("json_metadata", "")
         if isinstance(raw_metadata, str) and raw_metadata:
             try:
                 metadata = json.loads(raw_metadata)
-            except json.JSONDecodeError:
+            except Exception:
                 pass
         elif isinstance(raw_metadata, dict):
             metadata = raw_metadata
 
         profile = metadata.get("profile", {})
-
-        return {
+        data = {
             "name": acc.get("name"),
             "post_count": acc.get("post_count"),
             "reputation": acc.get_reputation(),
             "created": acc.get("created"),
             "about": bleach_content(profile.get("about", "NO DATA")),
         }
+        cache.set(cache_key, data, 300)
+        return data
     except Exception as e:
         logger.error(f"Error fetching account info for {username}: {e}")
         return None
 
 
 def get_account_blog(username, limit=10):
+    cache_key = f"blog_{username}_{limit}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     try:
         acc = Account(username)
         posts = []
         for post in acc.get_blog(limit=limit):
-            # Vote counting
             votes = post.get("net_votes")
             if votes is None:
                 votes = len(post.get("active_votes", []))
@@ -256,6 +270,7 @@ def get_account_blog(username, limit=10):
                     "children": post.get("children", 0),
                 }
             )
+        cache.set(cache_key, posts, 300)
         return posts
     except Exception as e:
         logger.error(f"Error fetching blog for {username}: {e}")
@@ -272,6 +287,11 @@ def get_latest_block_num():
 
 
 def get_block_details(block_num):
+    cache_key = f"block_{block_num}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     block_data = {
         "id": "DATA NOT FOUND",
         "number": block_num,
@@ -319,6 +339,7 @@ def get_block_details(block_num):
                     "raw": json.dumps(raw_serialized, indent=2, default=str),
                 }
             )
+            cache.set(cache_key, block_data, 3600)  # 1 hour
 
     except Exception as e:
         logger.error(f"Critical error in get_block_details for {block_num}: {e}")
@@ -328,20 +349,19 @@ def get_block_details(block_num):
 
 
 def get_top_witnesses(limit=20):
-    """
-    Fetches the active witnesses and sorts them by votes.
-    Using the Witnesses() class ensures we get the current active set.
-    """
+    cache_key = f"witnesses_{limit}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     try:
         witnesses = []
-        # Witnesses() class correctly identifies the active set
         all_active = Witnesses()
         for w in all_active:
-            # Handle vote weight (often represented as a huge integer/string)
             raw_votes = w.get("votes", 0)
             try:
                 vote_weight = int(raw_votes)
-            except ValueError, TypeError:
+            except Exception:
                 vote_weight = 0
 
             witnesses.append(
@@ -354,22 +374,25 @@ def get_top_witnesses(limit=20):
                 }
             )
 
-        # Sort descending by votes
         witnesses.sort(key=lambda x: x["votes"], reverse=True)
-        return witnesses[:limit]
+        data = witnesses[:limit]
+        cache.set(cache_key, data, 300)
+        return data
     except Exception as e:
         logger.error(f"Error fetching witnesses: {e}")
         return []
 
 
 def get_market_ticker():
-    """
-    Fetches the latest ticker info for HIVE:HBD.
-    """
+    cache_key = "market_ticker"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     try:
         m = Market("HIVE:HBD")
         ticker = m.ticker()
-        return {
+        data = {
             "latest": ticker.get("latest"),
             "lowest_ask": ticker.get("lowest_ask"),
             "highest_bid": ticker.get("highest_bid"),
@@ -377,22 +400,52 @@ def get_market_ticker():
             "hive_volume": ticker.get("hive_volume"),
             "hbd_volume": ticker.get("hbd_volume"),
         }
+        cache.set(cache_key, data, 30)  # 30 seconds
+        return data
     except Exception as e:
         logger.error(f"Error fetching market ticker: {e}")
         return None
 
 
 def get_popular_tags(limit=30):
-    """
-    Fetches popular/trending tags and resolves community names.
-    """
+    cache_key = f"tags_{limit}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
     try:
         tags = []
         q = Query(limit=limit)
         for t in Trending_tags(q):
             raw_name = t.get("name")
             tags.append({"raw": raw_name, "display": resolve_tag_name(raw_name)})
+        cache.set(cache_key, tags, 600)  # 10 minutes
         return tags
     except Exception as e:
         logger.error(f"Error fetching popular tags: {e}")
         return []
+
+
+def get_random_header():
+    """
+    Returns a random ASCII art header.
+    """
+    headers = [
+        # Standard
+        """  ____            _  _    _   _ ___ __     __ _____
+ / ___|  ___     | || |  | | | |_ _|\ \   / /| ____|
+| |  _  / _ \    | || |_ | |_| || |  \ \ / / |  _|
+| |_| || (_) |   |__   _||  _  || |   \ V /  | |___
+ \____| \___/       |_|  |_| |_|___|   \_/   |_____|""",
+        # Blocky
+        """ ██████  ██████      ██   ██ ██ ██    ██ ███████
+██       ██  ██     ██   ██ ██  ██  ██  ██
+██   ███ ██  ██     ███████ ██   ████   █████
+██    ██ ██  ██          ██ ██    ██    ██
+ ██████  ██████          ██ ██    ██    ███████ """,
+        # Lean
+        """_ ___  _ _     _ _ _ _  _ ____
+| | __ | | |    | |_| | |  | |___
+|_|_|  |_|_|      | | |_|  \_/ |___""",
+    ]
+    return random.choice(headers)

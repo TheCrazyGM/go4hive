@@ -6,6 +6,20 @@
     --font-family: 'Courier New', Courier, monospace;
 }
 
+/* Theme: Amber */
+body.theme-amber {
+    --text-color: #ffb000;
+    --dim-color: #a37200;
+    --highlight-color: #3b2a00;
+}
+
+/* Theme: White */
+body.theme-white {
+    --text-color: #e0e0e0;
+    --dim-color: #888888;
+    --highlight-color: #333333;
+}
+
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
@@ -14,6 +28,7 @@ body {
     padding: 20px;
     line-height: 1.2;
     text-transform: none;
+    overflow-x: hidden; /* Prevent horizontal scroll on mobile */
 }
 
 /* Scanline effect */
@@ -38,6 +53,7 @@ h1, h2, h3 {
     border-bottom: 1px dashed var(--text-color);
     padding-bottom: 5px;
     margin-top: 20px;
+    word-wrap: break-word;
 }
 
 a {
@@ -52,6 +68,7 @@ a:hover {
 
 .menu-item {
     margin: 5px 0;
+    word-wrap: break-word;
 }
 
 .selector {
@@ -63,6 +80,7 @@ pre {
     font-family: var(--font-family);
     white-space: pre-wrap;
     word-wrap: break-word;
+    font-size: 1em;
 }
 
 footer {
@@ -75,4 +93,29 @@ footer {
 .header-art {
     color: var(--text-color);
     margin-bottom: 20px;
+}
+
+.header-art pre {
+    white-space: pre;
+    font-size: 0.8em;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .header-art pre {
+        font-size: 0.4em; /* Scale down ASCII art on tiny screens */
+    }
+
+    pre {
+        font-size: 0.9em;
+    }
+
+    nav div {
+        float: none !important;
+        margin-top: 10px;
+    }
 }
