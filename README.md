@@ -2,31 +2,36 @@
 
 **Go4Hive** is a ultra-minimalist, text-centric frontend for the Hive blockchain. Inspired by the Gopher protocol and classic terminal interfaces, it provides a fast, distraction-free, and retro-styled experience for consuming Hive content.
 
-![Go4Hive Logo](https://raw.githubusercontent.com/thecrazygm/go4hive/main/static/gopher/images/logo_placeholder.png) *(Placeholder for future ASCII logo or screenshot)*
+---
 
 ## 📟 The Vision
 "Returning Hive to its textual roots." Go4Hive strips away the heavy JavaScript, images, and complex layouts of modern social media, delivering content in a high-contrast, terminal-style interface.
 
 ### Core Principles
 - **Content First:** Minimalist layout focused on readability.
-- **Retro Aesthetic:** Green-on-black terminal theme with scanline effects and ASCII art.
-- **Speed:** Server-side rendered for near-instant load times.
-- **Modern SDK:** Powered by `hive-nectar`, the successor to `beem`.
+- **Retro Aesthetic:** Multi-theme CRT styles with scanline effects and curated ASCII art.
+- **High Performance:** Aggressive server-side caching and local-memory resolution.
+- **Modern SDK:** Powered by `hive-nectar`, the superior successor to `beem`.
 
 ## 🛠 Tech Stack
 - **Language:** Python 3.14+
 - **Framework:** Django 6.x
 - **SDK:** [hive-nectar](https://github.com/thecrazygm/hive-nectar)
 - **Package Manager:** [uv](https://github.com/astral-sh/uv)
-- **Frontend:** Vanilla CSS (Terminal Theme)
+- **Frontend:** Vanilla CSS & Lightweight Vanilla JS (Universal Keyboard Navigation)
 
 ## ✨ Features
 - **Global Feeds:** Browse Trending and Hot discussions.
-- **Numbered Navigation:** Gopher-inspired numbered menus for easy keyboard navigation.
-- **Post Viewer:** Deep-dive into posts with nested comment rendering.
-- **User Profiles:** Look up `@user` profiles, reputation, and blog history.
-- **Tag Search:** Filter the blockchain via `#tags`.
-- **ASCII Branding:** Authentic retro headers and footers.
+- **Interactive Terminal:** 100% keyboard-navigable UI with a virtual terminal cursor.
+- **Custom CRT Themes:** Switch between Green, Amber, and White terminal modes.
+- **Extended Exploration:**
+    - **Block Explorer:** Inspect raw chain data and transaction details.
+    - **Witness Leaderboard:** Live ranking of the top active Hive witnesses.
+    - **Internal Market:** Real-time HIVE/HBD tickers from the internal DEX.
+    - **Popular Tags:** Community-curated topics with automatic community name resolution.
+- **Content Polishing:** Integrated `bleach` to aggressively strip messy HTML for a pure text experience.
+- **Smart Caching:** Near-instant page loads via Django local-memory cache.
+- **Curated ASCII Branding:** Randomized high-quality headers powered by `figlet`.
 
 ## 🚀 Getting Started
 
@@ -52,20 +57,28 @@
 ### Running the App
 Start the development server:
 ```bash
-uv run python manage.py runserver
+uv run python manage.py runserver 8888
 ```
-Visit `http://127.0.0.1:8000` in your browser.
+Visit `http://127.0.0.1:8888` in your browser.
+
+## ⌨️ Keyboard Shortcuts
+- **Arrow Up/Down:** Move virtual cursor between links.
+- **Arrow Left/Right:** Navigate history (Back/Forward).
+- **Enter:** Select/Open highlighted item.
+- **1 - 8:** Quick-jump to Main Menu items.
+- **'H' Key:** Instant return to Home.
 
 ## 🗺 Roadmap
-- [x] Phase 0: Project Scaffolding & Visual Foundation
-- [x] Phase 1: Browse Experience (Trending/Hot/Post View)
-- [x] Phase 2: Identity & Search (Profiles/Tag Search)
-- [ ] Phase 3: Interactions (Voting/Commenting via Hive Keychain)
-- [ ] Phase 4: Block Explorer & Polish
+- [x] Phase 1: The Foundation (Scaffolding & Terminal UI)
+- [x] Phase 2: Browse Experience (Trending/Hot/Profiles)
+- [x] Phase 3: Extended Exploration (Blocks/Witnesses/Market)
+- [x] Phase 4: Performance & Polish (Caching/Themes/Mobile)
+- [ ] Phase 5: Interactions (Voting/Commenting via Hive Keychain)
 
 ## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 🤝 Acknowledgments
-- Built by [thecrazygm](https://github.com/thecrazygm) using the [hive-nectar](https://github.com/thecrazygm/hive-nectar) SDK.
-- Inspired by the classic Gopher protocol.
+- Co-Authored by [thecrazygm](https://github.com/thecrazygm) and Gemini CLI Agent.
+- Built using the [hive-nectar](https://github.com/thecrazygm/hive-nectar) SDK.
+- Inspired by the classic Gopher protocol and retro BBS systems.
