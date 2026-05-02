@@ -361,6 +361,24 @@ def get_account_blog(username, limit=10):
         return []
 
 
+def get_account_feed(username, limit=20):
+    """
+    Fetches the personalized 'Following' feed for a user.
+    """
+    cache_key = f"feed_{username}_{limit}"
+    data = cache.get(cache_key)
+    if data:
+        return data
+
+    try:
+        acc = Account(username)
+        # get_feed() returns posts from people the user follows
+        return _process_discussions(acc.get_feed(limit=limit))
+    except Exception as e:
+        logger.error(f"Error fetching feed for {username}: {e}")
+        return []
+
+
 def get_latest_block_num():
     try:
         chain = Blockchain(mode="irreversible")

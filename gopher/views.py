@@ -5,6 +5,7 @@ from .services import (
     get_post_details,
     get_account_info,
     get_account_blog,
+    get_account_feed,
     get_latest_block_num,
     get_block_details,
     get_top_witnesses,
@@ -21,12 +22,32 @@ def _get_base_context(request):
     """
     # Prefer session-stored theme
     current_theme = request.session.get("theme", "green")
+    current_user = request.session.get("hive_user")
 
     return {
         "random_header": get_random_header(),
         "current_theme": current_theme,
+        "current_user": current_user,
         "full_path": request.get_full_path(),
     }
+
+
+def login_handshake(request, username):
+    """
+    Sets the session user after a successful Keychain signature.
+    """
+    request.session["hive_user"] = username
+    request.session.modified = True
+    return redirect("index")
+
+
+def logout(request):
+    """
+    Clears the session user.
+    """
+    if "hive_user" in request.session:
+        del request.session["hive_user"]
+    return redirect("index")
 
 
 def set_theme(request, theme_name):
@@ -63,6 +84,16 @@ def market(request):
     context = _get_base_context(request)
     context["ticker"] = get_market_ticker()
     return render(request, "gopher/market.html", context)
+
+
+def feed(request):
+    context = _get_base_context(request)
+    if not context["current_user"]:
+        return redirect("index")
+
+    posts = get_account_feed(context["current_user"])
+    context.update({"posts": posts, "title": "My Following Feed"})
+    return render(request, "gopher/trending.html", context)
 
 
 def tags(request):

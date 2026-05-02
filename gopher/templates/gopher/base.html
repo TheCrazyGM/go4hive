@@ -16,8 +16,13 @@
         </div>
 
         <nav>
-            [ <a href="/">HOME</a> ] [ <a href="/trending/">TRENDING</a> ] [ <a href="/search/">SEARCH</a> ]
-
+            [ <a href="/">HOME</a> ]
+            {% if current_user %}
+                [ <a href="/user/{{ current_user }}/">MY BLOG</a> ]
+                [ <a href="/feed/">MY FEED</a> ]
+            {% endif %}
+            [ <a href="/trending/">TRENDING</a> ]
+            [ <a href="/search/">SEARCH</a> ]
             <div style="float: right; font-size: 0.8em;">
                 THEME: [ <a href="/set-theme/green/?next={{ full_path }}">GREEN</a> ] [ <a href="/set-theme/amber/?next={{ full_path }}">AMBER</a> ] [ <a href="/set-theme/white/?next={{ full_path }}">WHITE</a> ]
             </div>
@@ -29,82 +34,168 @@
         </main>
 
         <footer>
-            <p>SYSTEM: Go4Hive v0.1.1-alpha</p>
+            <p id="system-status">SYSTEM: {% if current_user %}LOGGED IN AS @{{ current_user }}{% else %}GUEST MODE{% endif %} | Go4Hive v0.1.1-alpha</p>
             <p>BLOCKCHAIN: Hive (via hive-nectar)</p>
             <p>DATE: {% now "Y-m-d H:i:s" %} UTC</p>
         </footer>
 
+        <!-- Command Console -->
+        <div id="command-bar" style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-color); border-top: 1px solid var(--text-color); padding: 5px 20px; z-index: 2000; display: flex;">
+            <span style="color: var(--text-color); margin-right: 10px; font-weight: bold;">CMD></span>
+            <input type="text" id="cmd-input" style="background: transparent; border: none; color: var(--text-color); font-family: var(--font-family); flex-grow: 1; outline: none;" placeholder="Press ':' or '/' to focus..." autocomplete="off">
+        </div>
+
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                let selectedIndex = -1;
-                // Select all links in the body to allow full page navigation
+                const cmdInput = document.getElementById('cmd-input');
                 const allLinks = Array.from(document.querySelectorAll('body a'));
+                let selectedIndex = -1;
 
                 function updateCursor(newIndex, scroll = true) {
                     if (allLinks.length === 0) return;
-
-                    // Remove existing cursor
                     if (selectedIndex >= 0 && allLinks[selectedIndex]) {
                         allLinks[selectedIndex].classList.remove('terminal-cursor');
                     }
-
-                    // Clamp index
                     selectedIndex = Math.max(0, Math.min(newIndex, allLinks.length - 1));
-
-                    // Add new cursor
                     const selected = allLinks[selectedIndex];
                     selected.classList.add('terminal-cursor');
-
                     if (scroll) {
                         selected.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }
 
-                // Initialize cursor on the first link (likely HOME) but don't scroll
                 if (allLinks.length > 0) {
                     updateCursor(0, false);
                 }
 
-                document.addEventListener('keydown', (e) => {
-                    // Disable shortcuts when typing in search fields
-                    if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+                // Command Parser
+                function executeCommand(rawCmd) {
+                    const parts = rawCmd.trim().toLowerCase().split(' ');
+                    const command = parts[0];
+                    const args = parts.slice(1);
 
-                    // Number Keys (1-9) for direct jumps (matches data-key in index.html)
-                    if (e.key >= '1' && e.key <= '9') {
-                        const shortcut = document.querySelector(`[data-key="${e.key}"]`);
-                        if (shortcut) shortcut.click();
-                    }
+                    console.log(`Executing: ${command}`, args);
 
-                    // Arrow Navigation
-                    switch(e.key) {
-                        case 'ArrowDown':
-                            e.preventDefault();
-                            updateCursor(selectedIndex + 1, true);
-                            break;
-                        case 'ArrowUp':
-                            e.preventDefault();
-                            updateCursor(selectedIndex - 1, true);
-                            break;
-                        case 'ArrowLeft':
-                            history.back();
-                            break;
-                        case 'ArrowRight':
-                            history.forward();
-                            break;
-                        case 'Enter':
-                            if (selectedIndex >= 0 && allLinks[selectedIndex]) {
-                                allLinks[selectedIndex].click();
+                    switch(command) {
+                        case 'login':
+                            if (!args[0]) {
+                                alert('USAGE: login <username>');
+                                return;
                             }
+                            handleLogin(args[0]);
                             break;
-                        case 'h': // Home shortcut
-                        case 'H':
+                        case 'logout':
+                            window.location.href = '/logout/';
+                            break;
+                        case 'home':
+                        case 'h':
                             window.location.href = '/';
                             break;
+                        case 'trending':
+                            window.location.href = '/trending/';
+                            break;
+                        case 'hot':
+                            window.location.href = '/hot/';
+                            break;
+                        case 'search':
+                            window.location.href = '/search/';
+                            break;
+                        case 'witness':
+                        case 'witnesses':
+                            window.location.href = '/witnesses/';
+                            break;
+                        case 'blocks':
+                            window.location.href = '/blocks/';
+                            break;
+                        case 'market':
+                            window.location.href = '/market/';
+                            break;
+                        case 'help':
+                            window.location.href = '/about/';
+                            break;
+                        default:
+                            alert(`UNKNOWN COMMAND: ${command}`);
+                    }
+                }
+
+                function handleLogin(username) {
+                    if (!window.hive_keychain) {
+                        alert('HIVE KEYCHAIN EXTENSION NOT FOUND.');
+                        return;
+                    }
+
+                    // Remove @ if present
+                    const cleanUser = username.replace('@', '');
+
+                    window.hive_keychain.requestSignBuffer(cleanUser, 'Go4Hive Login Handshake', 'Posting', (response) => {
+                        if (response.success) {
+                            // Success! Send to server to set session
+                            window.location.href = `/login-handshake/${cleanUser}/`;
+                        } else {
+                            alert(`LOGIN FAILED: ${response.message}`);
+                        }
+                    });
+                }
+
+                document.addEventListener('keydown', (e) => {
+                    // Global hotkeys (when NOT typing in command bar or search)
+                    if (document.activeElement !== cmdInput && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+
+                        // Focus Command Bar
+                        if (e.key === ':' || e.key === '/') {
+                            e.preventDefault();
+                            cmdInput.focus();
+                            return;
+                        }
+
+                        // Number Keys (1-9) for direct jumps (matches data-key in index.html)
+                        if (e.key >= '1' && e.key <= '9') {
+                            const shortcut = document.querySelector(`[data-key="${e.key}"]`);
+                            if (shortcut) shortcut.click();
+                            return;
+                        }
+
+                        // Arrow Navigation
+                        switch(e.key) {
+                            case 'ArrowDown':
+                                e.preventDefault();
+                                updateCursor(selectedIndex + 1, true);
+                                break;
+                            case 'ArrowUp':
+                                e.preventDefault();
+                                updateCursor(selectedIndex - 1, true);
+                                break;
+                            case 'ArrowLeft':
+                                history.back();
+                                break;
+                            case 'ArrowRight':
+                                history.forward();
+                                break;
+                            case 'Enter':
+                                if (selectedIndex >= 0 && allLinks[selectedIndex]) {
+                                    allLinks[selectedIndex].click();
+                                }
+                                break;
+                            case 'h':
+                            case 'H':
+                                window.location.href = '/';
+                                break;
+                        }
+                    } else if (document.activeElement === cmdInput) {
+                        // Command Bar logic
+                        if (e.key === 'Enter') {
+                            const cmd = cmdInput.value;
+                            cmdInput.value = '';
+                            cmdInput.blur();
+                            executeCommand(cmd);
+                        } else if (e.key === 'Escape') {
+                            cmdInput.blur();
+                        }
                     }
                 });
             });
         </script>
-
     </body>
+
 
 </html>

@@ -29,6 +29,9 @@
     - **Witness Leaderboard:** Live ranking of the top active Hive witnesses.
     - **Internal Market:** Real-time HIVE/HBD tickers from the internal DEX.
     - **Popular Tags:** Community-curated topics with automatic community name resolution.
+- **Minimal Markdown Rendering:** Properly formatted text, lists, and blockquotes without the "raw" markdown clutter.
+- **Image-to-Text Safety:** Automatically converts <img> tags into clickable `[IMAGE: URL]` links to preserve the terminal vibe.
+- **Configurable Content Blacklist:** Admin-managed filtering to hide unwanted users and spam from all feeds and comments.
 - **Content Polishing:** Integrated `bleach` to aggressively strip messy HTML for a pure text experience.
 - **Smart Caching:** Near-instant page loads via Django local-memory cache.
 - **Curated ASCII Branding:** Randomized high-quality headers powered by `figlet`.
