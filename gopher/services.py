@@ -17,7 +17,7 @@ import bleach
 import re
 import random
 from django.core.cache import cache
-from .models import HiveCommunity
+from .models import HiveCommunity, BlacklistedUser
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,20 @@ def bleach_content(text):
     if not text:
         return ""
     return bleach.clean(text, tags=[], strip=True)
+
+
+def get_blacklist():
+    """
+    Returns a set of blacklisted usernames. Cached for performance.
+    """
+    cache_key = "user_blacklist"
+    blacklist = cache.get(cache_key)
+    if blacklist is not None:
+        return blacklist
+
+    blacklist = set(BlacklistedUser.objects.values_list("username", flat=True))
+    cache.set(cache_key, blacklist, 300)  # 5 minutes
+    return blacklist
 
 
 def resolve_tag_name(tag_name):
@@ -99,7 +113,12 @@ def get_hot_posts(limit=20, tag=None):
 
 def _process_discussions(discussions):
     posts = []
+    blacklist = get_blacklist()
     for post in discussions:
+        author = post.get("author")
+        if author in blacklist:
+            continue
+
         total_payout = (
             extract_payout_amount(post.get("pending_payout_value"))
             + extract_payout_amount(post.get("author_payout_value"))
@@ -117,7 +136,7 @@ def _process_discussions(discussions):
 
         posts.append(
             {
-                "author": post.get("author"),
+                "author": author,
                 "permlink": post.get("permlink"),
                 "title": post.get("title"),
                 "authorperm": post.get("authorperm"),
@@ -136,7 +155,13 @@ def get_post_details(authorperm):
     if data:
         return data
 
+    blacklist = get_blacklist()
     c = Comment(authorperm)
+
+    # Check if main post author is blacklisted
+    if c.get("author") in blacklist:
+        return None, []
+
     total_payout = (
         extract_payout_amount(c.get("pending_payout_value"))
         + extract_payout_amount(c.get("author_payout_value"))
@@ -177,6 +202,10 @@ def get_post_details(authorperm):
 
     replies = []
     for reply in c.get_replies():
+        r_author = reply.get("author")
+        if r_author in blacklist:
+            continue
+
         r_stats = reply.get("stats", {})
         r_votes = r_stats.get("total_votes", reply.get("net_votes"))
         if r_votes is None:
@@ -184,7 +213,7 @@ def get_post_details(authorperm):
 
         replies.append(
             {
-                "author": reply.get("author"),
+                "author": r_author,
                 "body": bleach_content(reply.get("body")),
                 "created": reply.get("created"),
                 "net_votes": r_votes,
@@ -218,6 +247,10 @@ def get_account_info(username):
     if data:
         return data
 
+    blacklist = get_blacklist()
+    if username in blacklist:
+        return None
+
     try:
         acc = Account(username)
         metadata = {}
@@ -250,6 +283,10 @@ def get_account_blog(username, limit=10):
     data = cache.get(cache_key)
     if data:
         return data
+
+    blacklist = get_blacklist()
+    if username in blacklist:
+        return []
 
     try:
         acc = Account(username)
