@@ -10,10 +10,13 @@ from nectar.blockchain import Blockchain
 from nectar.block import Block
 from nectar.witness import Witnesses
 from nectar.market import Market
+from nectar.community import Community
 from nectar import Hive
 import json
 import logging
 import bleach
+import re
+from .models import HiveCommunity
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +29,44 @@ def bleach_content(text):
         return ""
     # Bleach with no allowed tags to strip everything
     return bleach.clean(text, tags=[], strip=True)
+
+
+def resolve_tag_name(tag_name):
+    """
+    Resolves community identifiers like hive-123456 to human-readable names.
+    Uses HiveCommunity model as a persistent cache.
+    """
+    if not tag_name:
+        return ""
+
+    # Check for hive-XXXXXX pattern
+    if re.match(r"^hive-\d+$", tag_name):
+        # Check local cache first
+        cached = HiveCommunity.objects.filter(identifier=tag_name).first()
+        if cached:
+            return cached.title or cached.name or tag_name
+
+        # Not in cache, fetch from blockchain
+        try:
+            # We use a simple Hive instance; NodeList might be overkill here but good for production
+            hv = Hive()
+            comm = Community(tag_name, blockchain_instance=hv)
+            # Some communities have 'title', some use 'name' as the display label
+            comm_title = comm.get("title")
+            comm_name = comm.get("name")
+
+            display_name = comm_title or comm_name or tag_name
+
+            # Save to cache
+            HiveCommunity.objects.create(
+                identifier=tag_name, name=comm_name or tag_name, title=comm_title
+            )
+            return display_name
+        except Exception as e:
+            logger.warning(f"Failed to resolve community {tag_name}: {e}")
+            return tag_name
+
+    return tag_name
 
 
 def get_trending_posts(limit=20, tag=None):
@@ -91,6 +132,22 @@ def get_post_details(authorperm):
     if votes is None:
         votes = len(c.get("active_votes", []))
 
+    # Handle tags - they can be in 'tags' or 'json_metadata'
+    tags = c.get("tags", [])
+    if not tags:
+        metadata = c.get("json_metadata", {})
+        if isinstance(metadata, str):
+            try:
+                metadata = json.loads(metadata)
+            except Exception:
+                metadata = {}
+        tags = metadata.get("tags", [])
+
+    # Resolve tag names for display
+    resolved_tags = []
+    for t in tags:
+        resolved_tags.append({"raw": t, "display": resolve_tag_name(t)})
+
     # Process the main post
     post_data = {
         "author": c.get("author"),
@@ -101,6 +158,7 @@ def get_post_details(authorperm):
         "net_votes": votes,
         "authorperm": c.get("authorperm"),
         "payout": total_payout,
+        "tags": resolved_tags,
     }
 
     # Process replies
@@ -317,13 +375,14 @@ def get_market_ticker():
 
 def get_popular_tags(limit=30):
     """
-    Fetches popular/trending tags.
+    Fetches popular/trending tags and resolves community names.
     """
     try:
         tags = []
         q = Query(limit=limit)
         for t in Trending_tags(q):
-            tags.append(t.get("name"))
+            raw_name = t.get("name")
+            tags.append({"raw": raw_name, "display": resolve_tag_name(raw_name)})
         return tags
     except Exception as e:
         logger.error(f"Error fetching popular tags: {e}")

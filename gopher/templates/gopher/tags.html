@@ -9,7 +9,7 @@
         <div class="tag-cloud" style="line-height: 2;">
             {% for tag in tags %}
                 <span class="menu-item">
-                    [ <a href="/search/?q=%23{{ tag }}">#{{ tag }}</a> ]
+                    [ <a href="/search/?q=%23{{ tag.raw }}">#{{ tag.display }}</a> ]
                 </span>
             {% endfor %}
         </div>
