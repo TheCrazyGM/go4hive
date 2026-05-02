@@ -1,7 +1,7 @@
 {% extends "gopher/base.html" %}
 
 {% block content %}
-    <div class="post-header">
+    <div class="post-header" data-author="{{ post.author }}" data-permlink="{{ post.permlink }}">
         <h2>{{ post.title }}</h2>
         <div style="color: var(--dim-color); margin-bottom: 20px;">
             BY: <a href="/user/{{ post.author }}" style="color: var(--dim-color);">@{{ post.author }}</a> | CREATED: {{ post.created }} | VOTES: {{ post.net_votes }} | PAYOUT: ${{ post.payout|stringformat:".2f" }}

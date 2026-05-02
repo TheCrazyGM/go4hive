@@ -113,11 +113,42 @@
                         case 'help':
                             window.location.href = '/about/';
                             break;
+                        case 'vote':
+                            if (!"{{ current_user }}") {
+                                alert('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.');
+                                return;
+                            }
+                            handleVote(args[0]);
+                            break;
                         default:
                             alert(`UNKNOWN COMMAND: ${command}`);
                     }
                 }
 
+                function handleVote(weight) {
+                    const postHeader = document.querySelector('.post-header');
+                    if (!postHeader) {
+                        alert('ERROR: VOTE COMMAND ONLY VALID INSIDE POST DETAIL VIEW.');
+                        return;
+                    }
+
+                    if (!window.hive_keychain) {
+                        alert('HIVE KEYCHAIN EXTENSION NOT FOUND.');
+                        return;
+                    }
+
+                    const author = postHeader.getAttribute('data-author');
+                    const permlink = postHeader.getAttribute('data-permlink');
+                    const voteWeight = parseInt(weight || '100') * 100; // Keychain expects 10000 for 100%
+
+                    window.hive_keychain.requestVote("{{ current_user }}", permlink, author, voteWeight, (response) => {
+                        if (response.success) {
+                            alert(`SUCCESS: BROADCASTED ${weight || '100'}% VOTE TO @${author}.`);
+                        } else {
+                            alert(`VOTE FAILED: ${response.message}`);
+                        }
+                    });
+                }
                 function handleLogin(username) {
                     if (!window.hive_keychain) {
                         alert('HIVE KEYCHAIN EXTENSION NOT FOUND.');

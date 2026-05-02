@@ -156,6 +156,11 @@ def about(request):
     return render(request, "gopher/about.html", context)
 
 
+def help(request):
+    context = _get_base_context(request)
+    return render(request, "gopher/help.html", context)
+
+
 def block_explorer(request):
     latest = get_latest_block_num()
     blocks = []

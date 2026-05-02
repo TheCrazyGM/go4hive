@@ -7,6 +7,7 @@ urlpatterns = [
     path("hot/", views.hot, name="hot"),
     path("search/", views.search, name="search"),
     path("about/", views.about, name="about"),
+    path("help/", views.help, name="help"),
     path("post/<path:authorperm>/", views.post_detail, name="post_detail"),
     path("user/<str:username>/", views.profile, name="profile"),
     path("witnesses/", views.witnesses, name="witnesses"),
