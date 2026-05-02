@@ -40,16 +40,33 @@
         </footer>
 
         <!-- Command Console -->
-        <div id="command-bar" style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-color); border-top: 1px solid var(--text-color); padding: 5px 20px; z-index: 2000; display: flex;">
-            <span style="color: var(--text-color); margin-right: 10px; font-weight: bold;">CMD></span>
-            <input type="text" id="cmd-input" style="background: transparent; border: none; color: var(--text-color); font-family: var(--font-family); flex-grow: 1; outline: none;" placeholder="Press ':' or '/' to focus..." autocomplete="off">
+        <div id="command-bar" style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-color); border-top: 1px solid var(--text-color); padding: 5px 20px; z-index: 2000; display: flex; flex-direction: column;">
+            <div id="terminal-msg" style="font-size: 0.8em; margin-bottom: 5px; min-height: 1.2em; display: none; border-bottom: 1px dashed var(--dim-color); padding-bottom: 2px;"></div>
+            <div style="display: flex;">
+                <span style="color: var(--text-color); margin-right: 10px; font-weight: bold;">CMD></span>
+                <input type="text" id="cmd-input" style="background: transparent; border: none; color: var(--text-color); font-family: var(--font-family); flex-grow: 1; outline: none;" placeholder="Press ':' or '/' to focus..." autocomplete="off">
+            </div>
         </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const cmdInput = document.getElementById('cmd-input');
+                const terminalMsg = document.getElementById('terminal-msg');
                 const allLinks = Array.from(document.querySelectorAll('body a'));
                 let selectedIndex = -1;
+                let msgTimeout = null;
+
+                function printMsg(msg, isError = false) {
+                    if (msgTimeout) clearTimeout(msgTimeout);
+
+                    terminalMsg.innerText = msg;
+                    terminalMsg.style.display = 'block';
+                    terminalMsg.style.color = isError ? '#ff0000' : 'var(--text-color)';
+
+                    msgTimeout = setTimeout(() => {
+                        terminalMsg.style.display = 'none';
+                    }, 5000); // Hide after 5 seconds
+                }
 
                 function updateCursor(newIndex, scroll = true) {
                     if (allLinks.length === 0) return;
@@ -79,7 +96,7 @@
                     switch(command) {
                         case 'login':
                             if (!args[0]) {
-                                alert('USAGE: login <username>');
+                                printMsg('USAGE: login <username>', true);
                                 return;
                             }
                             handleLogin(args[0]);
@@ -114,60 +131,63 @@
                             window.location.href = '/help/';
                             break;
                         case 'vote':
-
                             if (!"{{ current_user }}") {
-                                alert('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.');
+                                printMsg('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.', true);
                                 return;
                             }
                             handleVote(args[0]);
                             break;
                         default:
-                            alert(`UNKNOWN COMMAND: ${command}`);
+                            printMsg(`UNKNOWN COMMAND: ${command}`, true);
                     }
                 }
 
                 function handleVote(weight) {
                     const postHeader = document.querySelector('.post-header');
                     if (!postHeader) {
-                        alert('ERROR: VOTE COMMAND ONLY VALID INSIDE POST DETAIL VIEW.');
+                        printMsg('ERROR: VOTE COMMAND ONLY VALID INSIDE POST DETAIL VIEW.', true);
                         return;
                     }
 
                     if (!window.hive_keychain) {
-                        alert('HIVE KEYCHAIN EXTENSION NOT FOUND.');
+                        printMsg('HIVE KEYCHAIN EXTENSION NOT FOUND.', true);
                         return;
                     }
 
                     const author = postHeader.getAttribute('data-author');
                     const permlink = postHeader.getAttribute('data-permlink');
-                    const voteWeight = parseInt(weight || '100') * 100; // Keychain expects 10000 for 100%
+                    const voteWeight = parseInt(weight || '100') * 100;
+
+                    printMsg(`INITIATING VOTE FOR @${author}...`);
 
                     window.hive_keychain.requestVote("{{ current_user }}", permlink, author, voteWeight, (response) => {
                         if (response.success) {
-                            alert(`SUCCESS: BROADCASTED ${weight || '100'}% VOTE TO @${author}.`);
+                            printMsg(`SUCCESS: BROADCASTED ${weight || '100'}% VOTE.`);
                         } else {
-                            alert(`VOTE FAILED: ${response.message}`);
+                            printMsg(`VOTE FAILED: ${response.message}`, true);
                         }
                     });
                 }
+
                 function handleLogin(username) {
                     if (!window.hive_keychain) {
-                        alert('HIVE KEYCHAIN EXTENSION NOT FOUND.');
+                        printMsg('HIVE KEYCHAIN EXTENSION NOT FOUND.', true);
                         return;
                     }
 
-                    // Remove @ if present
                     const cleanUser = username.replace('@', '');
+                    printMsg(`AWAITING HANDSHAKE FROM @${cleanUser}...`);
 
                     window.hive_keychain.requestSignBuffer(cleanUser, 'Go4Hive Login Handshake', 'Posting', (response) => {
                         if (response.success) {
-                            // Success! Send to server to set session
+                            printMsg('SIGNATURE VERIFIED. REDIRECTING...');
                             window.location.href = `/login-handshake/${cleanUser}/`;
                         } else {
-                            alert(`LOGIN FAILED: ${response.message}`);
+                            printMsg(`LOGIN FAILED: ${response.message}`, true);
                         }
                     });
                 }
+
 
                 document.addEventListener('keydown', (e) => {
                     // Global hotkeys (when NOT typing in command bar or search)
