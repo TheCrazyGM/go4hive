@@ -12,20 +12,40 @@ from .services import (
     get_popular_tags,
     get_random_header,
 )
+import urllib.parse
 
 
 def _get_base_context(request):
     """
     Helper to inject common context like random header and theme.
     """
-    theme = request.GET.get("theme")
-    if theme:
-        request.session["theme"] = theme
+    # Prefer session-stored theme
+    current_theme = request.session.get("theme", "green")
 
     return {
         "random_header": get_random_header(),
-        "current_theme": request.session.get("theme", "green"),
+        "current_theme": current_theme,
+        "full_path": request.get_full_path(),
     }
+
+
+def set_theme(request, theme_name):
+    """
+    Sets the theme and redirects back to the previous page, stripping the theme param.
+    """
+    request.session["theme"] = theme_name
+    request.session.modified = True
+
+    next_url = request.GET.get("next", "/")
+
+    # Strip theme param from next_url if it exists to prevent infinite fighting
+    url_parts = list(urllib.parse.urlparse(next_url))
+    query = dict(urllib.parse.parse_qsl(url_parts[4]))
+    query.pop("theme", None)
+    url_parts[4] = urllib.parse.urlencode(query)
+    clean_next = urllib.parse.urlunparse(url_parts)
+
+    return redirect(clean_next)
 
 
 def index(request):

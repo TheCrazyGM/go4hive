@@ -8,16 +8,16 @@
 
 /* Theme: Amber */
 body.theme-amber {
-    --text-color: #ffb000;
-    --dim-color: #a37200;
-    --highlight-color: #3b2a00;
+    --text-color: #ffb000 !important;
+    --dim-color: #a37200 !important;
+    --highlight-color: #3b2a00 !important;
 }
 
 /* Theme: White */
 body.theme-white {
-    --text-color: #e0e0e0;
-    --dim-color: #888888;
-    --highlight-color: #333333;
+    --text-color: #e0e0e0 !important;
+    --dim-color: #888888 !important;
+    --highlight-color: #333333 !important;
 }
 
 body {
