@@ -184,6 +184,18 @@ def help(request):
     return render(request, "gopher/help.html", context)
 
 
+def editor(request):
+    context = _get_base_context(request)
+    if not context["current_user"]:
+        return redirect("index")
+
+    # Grab initial tag if provided via GET (e.g., :post #hive)
+    initial_tag = request.GET.get("tag", "").replace("#", "")
+    context["initial_tag"] = initial_tag
+
+    return render(request, "gopher/editor.html", context)
+
+
 def block_explorer(request):
     latest = get_latest_block_num()
     blocks = []

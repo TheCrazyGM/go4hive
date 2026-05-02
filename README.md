@@ -23,6 +23,7 @@
 ## ✨ Features
 - **Global Feeds:** Browse Trending and Hot discussions.
 - **Interactive Terminal:** 100% keyboard-navigable UI with a virtual terminal cursor.
+- **Nano-style Terminal Editor:** A dedicated, full-screen environment for creating blockchain posts with 'Ctrl' hotkey support.
 - **Custom CRT Themes:** Switch between Green, Amber, and White terminal modes.
 - **Extended Exploration:**
     - **Block Explorer:** Inspect raw chain data and transaction details.

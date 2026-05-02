@@ -60,9 +60,8 @@
                 let selectedIndex = -1;
                 let msgTimeout = null;
 
-                function printMsg(msg, isError = false) {
+                window.printMsg = function(msg, isError = false) {
                     if (msgTimeout) clearTimeout(msgTimeout);
-
                     terminalMsg.innerText = msg;
                     terminalMsg.style.display = 'block';
                     terminalMsg.style.color = isError ? '#ff0000' : 'var(--text-color)';
@@ -165,7 +164,16 @@
                         case 'market':
                             window.location.href = '/market/';
                             break;
+                        case 'post':
+                            if (!CURRENT_USER || CURRENT_USER === 'None') {
+                                printMsg('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.', true);
+                                return;
+                            }
+                            const initialTag = args[0] || '';
+                            window.location.href = `/editor/?tag=${encodeURIComponent(initialTag)}`;
+                            break;
                         case 'wallet':
+
                             if (args[0]) {
                                 window.location.href = `/wallet/${args[0].replace('@', '')}/`;
                             } else if (CURRENT_USER) {

@@ -15,6 +15,7 @@ urlpatterns = [
     path("feed/", views.feed, name="feed"),
     path("wallet/", views.wallet, name="wallet"),
     path("wallet/<str:username>/", views.wallet, name="wallet_user"),
+    path("editor/", views.editor, name="editor"),
     path("tags/", views.tags, name="tags"),
     path("set-theme/<str:theme_name>/", views.set_theme, name="set_theme"),
     path(
