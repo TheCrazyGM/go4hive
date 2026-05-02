@@ -10,7 +10,6 @@ from nectar.blockchain import Blockchain
 from nectar.block import Block
 from nectar.witness import Witnesses
 from nectar.market import Market
-from nectar.community import Community
 from nectar import Hive
 import json
 import logging
@@ -46,22 +45,32 @@ def resolve_tag_name(tag_name):
         if cached:
             return cached.title or cached.name or tag_name
 
-        # Not in cache, fetch from blockchain
+        # Not in cache, fetch from blockchain using raw bridge API
         try:
-            # We use a simple Hive instance; NodeList might be overkill here but good for production
             hv = Hive()
-            comm = Community(tag_name, blockchain_instance=hv)
-            # Some communities have 'title', some use 'name' as the display label
-            comm_title = comm.get("title")
-            comm_name = comm.get("name")
+            payload = {
+                "jsonrpc": "2.0",
+                "method": "bridge.get_community",
+                "params": {"name": tag_name},
+                "id": 1,
+            }
 
-            display_name = comm_title or comm_name or tag_name
+            # rpcexec in nectar returns the result directly if successful
+            res = hv.rpc.rpcexec(payload)
 
-            # Save to cache
-            HiveCommunity.objects.create(
-                identifier=tag_name, name=comm_name or tag_name, title=comm_title
-            )
-            return display_name
+            if res and isinstance(res, dict):
+                comm_title = res.get("title")
+                comm_name = res.get("name")
+
+                display_name = comm_title or comm_name or tag_name
+
+                # Save to cache
+                HiveCommunity.objects.create(
+                    identifier=tag_name, name=comm_name or tag_name, title=comm_title
+                )
+                return display_name
+            else:
+                return tag_name
         except Exception as e:
             logger.warning(f"Failed to resolve community {tag_name}: {e}")
             return tag_name
