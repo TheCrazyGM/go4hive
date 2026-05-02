@@ -39,47 +39,51 @@
                 let selectedIndex = -1;
                 const mainLinks = Array.from(document.querySelectorAll('main a'));
 
-                function updateCursor(newIndex) {
+                function updateCursor(newIndex, scroll = true) {
                     if (mainLinks.length === 0) return;
 
-                    // Remove existing cursor
+                // Remove existing cursor
                     if (selectedIndex >= 0) {
                         mainLinks[selectedIndex].classList.remove('terminal-cursor');
                     }
 
-                    // Clamp index
+                // Clamp index
                     selectedIndex = Math.max(0, Math.min(newIndex, mainLinks.length - 1));
 
-                    // Add new cursor
+                // Add new cursor
                     const selected = mainLinks[selectedIndex];
                     selected.classList.add('terminal-cursor');
-                    selected.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    if (scroll) {
+                        selected.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
 
-                // Initialize cursor on first link if it exists
+            // Initialize cursor but DON'T scroll to it automatically
+            // This prevents jumping to the bottom on pages with few/distant links
                 if (mainLinks.length > 0) {
-                    updateCursor(0);
+                    updateCursor(0, false);
                 }
 
                 document.addEventListener('keydown', (e) => {
-                    // Disable shortcuts when typing in search fields
+                // Disable shortcuts when typing in search fields
                     if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
-                    // Number Keys (1-9) for direct jumps
+                // Number Keys (1-9) for direct jumps
                     if (e.key >= '1' && e.key <= '9') {
                         const shortcut = document.querySelector(`[data-key="${e.key}"]`);
                         if (shortcut) shortcut.click();
                     }
 
-                    // Arrow Navigation
+                // Arrow Navigation
                     switch(e.key) {
                         case 'ArrowDown':
                             e.preventDefault();
-                            updateCursor(selectedIndex + 1);
+                            updateCursor(selectedIndex + 1, true);
                             break;
                         case 'ArrowUp':
                             e.preventDefault();
-                            updateCursor(selectedIndex - 1);
+                            updateCursor(selectedIndex - 1, true);
                             break;
                         case 'ArrowLeft':
                             history.back();
