@@ -207,11 +207,11 @@
                     }
 
                     const to = args[0].replace('@', '');
-                    let amount = args[1];
+                    let rawAmount = args[1];
                     let currency = 'HIVE';
                     let memo = '';
 
-                        // Check if 3rd arg is currency or start of memo
+                    // Check if 3rd arg is currency or start of memo
                     if (args[2] && ['HIVE', 'HBD'].includes(args[2].toUpperCase())) {
                         currency = args[2].toUpperCase();
                         memo = args.slice(3).join(' ');
@@ -219,7 +219,16 @@
                         memo = args.slice(2).join(' ');
                     }
 
-                        // Remove quotes from memo if present
+                    // Input Normalization (Guardrails)
+                    const parsedAmount = parseFloat(rawAmount);
+                    if (isNaN(parsedAmount)) {
+                        printMsg(`INVALID AMOUNT: ${rawAmount}`, true);
+                        return;
+                    }
+                    const amount = parsedAmount.toFixed(3);
+                    currency = currency.toUpperCase();
+
+                    // Remove quotes from memo if present
                     memo = memo.replace(/^["']|["']$/g, '');
 
                     printMsg(`INITIATING TRANSFER OF ${amount} ${currency} TO @${to}...`);
@@ -232,7 +241,6 @@
                         }
                     });
                 }
-
                 function handleVote(weight) {
 
                     const postHeader = document.querySelector('.post-header');
