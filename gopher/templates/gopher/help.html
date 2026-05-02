@@ -2,26 +2,75 @@
 
 {% block content %}
     <h2>Terminal Command List</h2>
-<pre style="background-color: var(--highlight-color); padding: 15px; border: 1px dashed var(--dim-color);">
-COMMAND                              DESCRIPTION
--------------------------------------------------------------------------
-help                                 Display this manual
-login [user]                         Initiate Keychain handshake for [user]
-logout                               Clear current session
-home / h                             Return to Main Menu
-trending                             Browse Trending feed
-hot                                  Browse Hot feed
-feed                                 Browse your personalized Following feed
-search                               Navigate to Search interface
-witness                              View Witness Leaderboard
-market                               View HIVE/HBD Ticker
-wallet [user]                        View Wallet Ledger for [user] or yourself
-blocks                               View Block Explorer
-vote [weight]                        Cast vote on current post (1-100)
-                                     *Only available inside Post Detail view
-transfer <to> <amount> [cur] [memo]  Transfer assets to another user.
-                                     *Currency [cur] defaults to HIVE.
-</pre>
+
+    <div style="background-color: var(--highlight-color); padding: 15px; border: 1px dashed var(--dim-color); margin-bottom: 30px;">
+        <table style="width: 100%; border-collapse: collapse; font-family: var(--font-family); font-size: 1em;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--dim-color); text-align: left;">
+                    <th style="padding: 10px; width: 35%;">COMMAND</th>
+                    <th style="padding: 10px;">DESCRIPTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">help</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Display this manual</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">login [user]</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Initiate Keychain handshake for [user]</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">logout</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Clear current session</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">home / h</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Return to Main Menu</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">trending</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Browse Trending feed</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">hot</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Browse Hot feed</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">feed</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Browse your personalized Following feed</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">search</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Navigate to Search interface</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">witness</td>
+                    <td style="padding: 10px; color: var(--dim-color);">View Witness Leaderboard</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">market</td>
+                    <td style="padding: 10px; color: var(--dim-color);">View HIVE/HBD Ticker</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">wallet [user]</td>
+                    <td style="padding: 10px; color: var(--dim-color);">View Wallet Ledger for [user] or yourself</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">blocks</td>
+                    <td style="padding: 10px; color: var(--dim-color);">View Block Explorer</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">vote [weight]</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Cast vote on current post (1-100)<br><i>*Only available inside Post Detail view</i></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; color: var(--text-color);">transfer &lt;to&gt; &lt;amount&gt; [cur] [memo]</td>
+                    <td style="padding: 10px; color: var(--dim-color);">Transfer assets to another user.<br><i>*Currency [cur] defaults to HIVE.</i></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div style="margin-top: 30px;">
         [ <a href="/">BACK TO MENU</a> ]
