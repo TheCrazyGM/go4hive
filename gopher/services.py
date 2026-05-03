@@ -488,7 +488,7 @@ def get_top_witnesses(limit=20):
 
 def get_wallet_data(username):
     """
-    Fetches comprehensive wallet data for a user.
+    Fetches comprehensive wallet data and recent history for a user.
     """
     cache_key = f"wallet_{username}"
     data = cache.get(cache_key)
@@ -505,10 +505,27 @@ def get_wallet_data(username):
         # Resource Credits (RC) Manabar
         try:
             rc_mana = acc.get_rc_manabar()
-            # nectar uses 'current_pct' for RC sometimes, or 'current_mana_pct'
             rc = rc_mana.get("current_pct") or rc_mana.get("current_mana_pct", 0.0)
         except Exception:
             rc = 0.0
+
+        # Fetch Transfer History (last 10)
+        transfers = []
+        try:
+            for tx in acc.history_reverse(only_ops=["transfer"]):
+                transfers.append(
+                    {
+                        "timestamp": tx.get("timestamp"),
+                        "from": tx.get("from"),
+                        "to": tx.get("to"),
+                        "amount": str(tx.get("amount", "0.000")),
+                        "memo": tx.get("memo", ""),
+                    }
+                )
+                if len(transfers) >= 10:
+                    break
+        except Exception as e:
+            logger.warning(f"Failed to fetch history for {username}: {e}")
 
         data = {
             "name": acc.name,
@@ -520,6 +537,7 @@ def get_wallet_data(username):
             "voting_power": f"{vp:.2f}%",
             "resource_credits": f"{rc:.2f}%",
             "reputation": f"{acc.rep:.2f}",
+            "history": transfers,
         }
         cache.set(cache_key, data, 60)  # 1 minute cache for wallet
         return data

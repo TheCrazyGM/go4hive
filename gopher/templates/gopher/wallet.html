@@ -24,7 +24,42 @@ RESOURCE CREDITS {{ wallet.resource_credits }}
 </pre>
     </div>
 
+    <h3>Recent Transactions (Transfers)</h3>
+    <div style="background-color: var(--highlight-color); padding: 15px; border: 1px dashed var(--dim-color);">
+        <table style="width: 100%; border-collapse: collapse; font-family: var(--font-family); font-size: 0.9em;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--dim-color); text-align: left;">
+                    <th style="padding: 5px;">DATE</th>
+                    <th style="padding: 5px;">FROM/TO</th>
+                    <th style="padding: 5px;">AMOUNT</th>
+                    <th style="padding: 5px;">MEMO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in wallet.history %}
+                    <tr style="border-bottom: 1px dotted var(--highlight-color);">
+                        <td style="padding: 5px; color: var(--dim-color);">{{ tx.timestamp|slice:":10" }}</td>
+                        <td style="padding: 5px;">
+                            {% if tx.from == wallet.name %}
+                                TO: <a href="/user/{{ tx.to }}/">@{{ tx.to }}</a>
+                            {% else %}
+                                FROM: <a href="/user/{{ tx.from }}/">@{{ tx.from }}</a>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 5px; color: var(--text-color);">{{ tx.amount }}</td>
+                        <td style="padding: 5px; color: var(--dim-color); font-size: 0.85em; font-style: italic;">{{ tx.memo|truncatechars:30 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" style="padding: 10px; text-align: center;">NO RECENT TRANSFERS FOUND.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <div style="margin-top: 30px;">
+
     <pre>
 THE HIVE WALLET ALLOWS YOU TO MANAGE YOUR LIQUID
 AND STAKED ASSETS. HIVE POWER (HP) REPRESENTS
