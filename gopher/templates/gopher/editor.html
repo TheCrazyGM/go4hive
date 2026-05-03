@@ -1,9 +1,10 @@
 {% extends "gopher/base.html" %}
+{% load static %}
 
 {% block content %}
     <div id="editor-container" style="display: flex; flex-direction: column; height: 80vh;">
         <div id="editor-status" style="border-bottom: 1px solid var(--dim-color); padding-bottom: 5px; margin-bottom: 10px;">
-        <pre style="margin: 0;">GO4HIVE v0.1.1 - [NEW POST] - STATUS: <span id="buffer-status">READY</span></pre>
+        <pre style="margin: 0;">GO4HIVE v0.2.0 - [NEW POST] - STATUS: <span id="buffer-status">READY</span></pre>
             <div style="margin-top: 10px; display: flex; align-items: center;">
                 <label style="color: var(--dim-color); width: 70px; display: inline-block;">TITLE:</label>
                 <input type="text" id="post-title" style="background: transparent; border: none; border-bottom: 1px dashed var(--dim-color); color: var(--text-color); font-family: var(--font-family); flex-grow: 1; padding: 2px 5px; outline: none;" placeholder="Enter post title..." autofocus>
@@ -20,91 +21,7 @@
         <pre style="margin: 0; color: inherit; background: inherit;">^O BROADCAST (Save)   ^X DISCARD & EXIT   ^K CLEAR   ^G HELP</pre>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const titleInput = document.getElementById('post-title');
-            const tagsInput = document.getElementById('post-tags');
-            const bodyInput = document.getElementById('post-body');
-            const bufferStatus = document.getElementById('buffer-status');
 
-        // Restore from LocalStorage if exists
-            const savedBody = localStorage.getItem('gopher_editor_body');
-            if (savedBody) {
-                bodyInput.value = savedBody;
-                bufferStatus.innerText = 'RECOVERED';
-            }
-
-            bodyInput.addEventListener('input', () => {
-                localStorage.setItem('gopher_editor_body', bodyInput.value);
-                bufferStatus.innerText = 'MODIFIED';
-            });
-
-            function doBroadcast() {
-                if (!titleInput.value || !bodyInput.value) {
-                    if (window.printMsg) window.printMsg('ERROR: TITLE AND BODY ARE REQUIRED.', true);
-                    else alert('ERROR: TITLE AND BODY ARE REQUIRED.');
-                    return;
-                }
-
-                if (!window.hive_keychain) {
-                    if (window.printMsg) window.printMsg('HIVE KEYCHAIN NOT FOUND.', true);
-                    else alert('HIVE KEYCHAIN NOT FOUND.');
-                    return;
-                }
-
-                const title = titleInput.value;
-                const body = bodyInput.value;
-                const tags = tagsInput.value.toLowerCase().split(' ').filter(t => t.length > 0);
-
-            // Per Hive standards, first tag is the primary category
-                const parent_permlink = tags.length > 0 ? tags[0] : 'hive-100421';
-                const permlink = title.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 255);
-
-                bufferStatus.innerText = 'BROADCASTING...';
-                if (window.printMsg) window.printMsg('COMMUNICATING WITH MAINFRAME...');
-
-                window.hive_keychain.requestPost("{{ current_user }}", title, body, parent_permlink, '',
-                    JSON.stringify({tags: tags, app: 'go4hive/0.1.1'}), permlink, '', (response) => {
-                        if (response.success) {
-                            bufferStatus.innerText = 'SUCCESS';
-                            localStorage.removeItem('gopher_editor_body');
-                            if (window.printMsg) window.printMsg('SUCCESS: POST BROADCASTED TO HIVE!');
-                            setTimeout(() => {
-                                window.location.href = '/user/{{ current_user }}/';
-                            }, 2000);
-                        } else {
-                            bufferStatus.innerText = 'FAILED';
-                            if (window.printMsg) window.printMsg('BROADCAST FAILED: ' + response.message, true);
-                            else alert('BROADCAST FAILED: ' + response.message);
-                        }
-                    });
-            }
-
-            document.addEventListener('keydown', (e) => {
-            // Check for Ctrl combinations
-                if (e.ctrlKey) {
-                    const key = e.key.toLowerCase();
-                    if (key === 'o') {
-                        e.preventDefault();
-                        doBroadcast();
-                    } else if (key === 'x') {
-                        e.preventDefault();
-                        if (bodyInput.value && !confirm('DISCARD CHANGES AND EXIT?')) return;
-                        localStorage.removeItem('gopher_editor_body');
-                        window.location.href = '/';
-                    } else if (key === 'k') {
-                        e.preventDefault();
-                        if (confirm('CLEAR ENTIRE BUFFER?')) {
-                            bodyInput.value = '';
-                            localStorage.removeItem('gopher_editor_body');
-                            bufferStatus.innerText = 'CLEAN';
-                        }
-                    } else if (key === 'g') {
-                        e.preventDefault();
-                        alert('GO4HIVE NANO EDITOR\n^O: Broadcast to Hive Blockchain\n^X: Exit to Home\n^K: Clear current text\nUse TAB to switch between fields.');
-                    }
-                }
-            });
-        });
-    </script>
+<!-- Editor Specific Logic -->
+    <script src="{% static 'gopher/js/editor.js' %}"></script>
 {% endblock %}
