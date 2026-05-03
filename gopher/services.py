@@ -23,6 +23,15 @@ from .models import HiveCommunity, BlacklistedUser
 logger = logging.getLogger(__name__)
 
 
+def bleach_content(text):
+    """
+    Strips all HTML tags from the content to keep it text-only.
+    """
+    if not text:
+        return ""
+    return bleach.clean(text, tags=[], strip=True)
+
+
 def render_content(text):
     """
     Renders Markdown to minimal HTML, strips images, and bleaches the rest.
@@ -32,7 +41,6 @@ def render_content(text):
         return ""
 
     # 1. First, strip any raw HTML tags that were in the original blockchain data
-    # to avoid people injecting malicious stuff or messy layouts.
     text = bleach.clean(text, tags=[], strip=True)
 
     # 2. Render Markdown to HTML
@@ -40,7 +48,6 @@ def render_content(text):
     html = md.convert(text)
 
     # 3. Use Regex to convert <img> tags to [IMAGE: URL] links
-    # Pattern: <img src="url" alt="alt" ...>
     html = re.sub(
         r'<img [^>]*src="([^"]+)"[^>]*>', r'[IMAGE: <a href="\1">\1</a>]', html
     )
@@ -288,6 +295,32 @@ def extract_payout_amount(value):
     return 0.0
 
 
+def format_nai_asset(value):
+    """
+    Sculpts raw NAI asset data into human-readable strings.
+    Handles formats like: {'nai': '@@000000021', 'amount': '3000000', 'precision': 3}
+    """
+    if not value:
+        return "0.000"
+
+    if isinstance(value, dict):
+        amount_str = value.get("amount", "0")
+        precision = value.get("precision", 3)
+        nai = value.get("nai", "")
+
+        symbol = "HIVE"
+        if nai == "@@000000013":
+            symbol = "HBD"
+
+        try:
+            amount_float = int(amount_str) / (10**precision)
+            return f"{amount_float:.{precision}f} {symbol}"
+        except ValueError, TypeError:
+            return str(value)
+
+    return str(value)
+
+
 def get_account_info(username):
     cache_key = f"acc_{username}"
     data = cache.get(cache_key)
@@ -451,7 +484,6 @@ def get_block_details(block_num):
 
 
 def get_top_witnesses(limit=20):
-    # ... (existing code)
     cache_key = f"witnesses_{limit}"
     data = cache.get(cache_key)
     if data:
@@ -518,7 +550,7 @@ def get_wallet_data(username):
                         "timestamp": tx.get("timestamp"),
                         "from": tx.get("from"),
                         "to": tx.get("to"),
-                        "amount": str(tx.get("amount", "0.000")),
+                        "amount": format_nai_asset(tx.get("amount")),
                         "memo": tx.get("memo", ""),
                     }
                 )
