@@ -109,6 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'hot':
                 window.location.href = '/hot/';
                 break;
+            case 'feed':
+                if (!user) {
+                    printMsg('HANDSHAKE REQUIRED. PLEASE LOGIN FIRST.', true);
+                    return;
+                }
+                window.location.href = '/feed/';
+                break;
             case 'search':
                 window.location.href = '/search/';
                 break;
