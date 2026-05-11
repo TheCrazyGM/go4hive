@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import HiveCommunity, BlacklistedUser
+
+from .models import BlacklistedUser, HiveCommunity
 
 
 @admin.register(HiveCommunity)

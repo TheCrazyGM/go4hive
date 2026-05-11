@@ -179,11 +179,35 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const cleanUser = username.replace('@', '');
+        const message = 'Go4Hive Login Handshake';
         printMsg(`AWAITING HANDSHAKE FROM @${cleanUser}...`);
-        window.hive_keychain.requestSignBuffer(cleanUser, 'Go4Hive Login Handshake', 'Posting', (response) => {
+        window.hive_keychain.requestSignBuffer(cleanUser, message, 'Posting', (response) => {
             if (response.success) {
-                printMsg('SIGNATURE VERIFIED. REDIRECTING...');
-                window.location.href = `/login-handshake/${cleanUser}/`;
+                printMsg('SIGNATURE GENERATED. VERIFYING ON SERVER...');
+
+                // POST the signature and buffer to the server for verification
+                fetch(`/login-handshake/${cleanUser}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        signature: response.result,
+                        buffer: message,
+                        publicKey: response.publicKey
+                    })
+                }).then(res => {
+                    if (res.ok) {
+                        printMsg('SIGNATURE VERIFIED. REDIRECTING...');
+                        window.location.href = '/';
+                    } else {
+                        res.text().then(text => {
+                            printMsg(`SERVER VERIFICATION FAILED: ${text}`, true);
+                        });
+                    }
+                }).catch(err => {
+                    printMsg('COMMUNICATION ERROR DURING HANDSHAKE.', true);
+                });
             } else {
                 printMsg(`LOGIN FAILED: ${response.message}`, true);
             }

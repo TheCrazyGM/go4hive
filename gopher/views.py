@@ -1,20 +1,27 @@
-from django.shortcuts import render, redirect
+import json
+import urllib.parse
+
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
 from .services import (
-    get_trending_posts,
-    get_hot_posts,
-    get_post_details,
-    get_account_info,
     get_account_blog,
     get_account_feed,
-    get_latest_block_num,
+    get_account_info,
     get_block_details,
-    get_top_witnesses,
+    get_hot_posts,
+    get_latest_block_num,
     get_market_ticker,
     get_popular_tags,
+    get_post_details,
     get_random_header,
+    get_top_witnesses,
+    get_trending_posts,
     get_wallet_data,
 )
-import urllib.parse
 
 
 def _get_base_context(request):
@@ -37,13 +44,53 @@ def _get_base_context(request):
     }
 
 
+@csrf_exempt
+@require_POST
 def login_handshake(request, username):
     """
-    Sets the session user after a successful Keychain signature.
+    Sets the session user after a successful Keychain signature verification.
+    Expects POST data: { "signature": "...", "buffer": "..." }
     """
-    request.session["hive_user"] = username
-    request.session.modified = True
-    return redirect("index")
+    try:
+        data = json.loads(request.body)
+        signature = data.get("signature")
+        sig_buffer = data.get("buffer")
+
+        if not signature or not sig_buffer:
+            return HttpResponseForbidden("MISSING SIGNATURE DATA.")
+
+        from nectar.account import Account
+        from nectargraphenebase.account import PublicKey
+        from nectargraphenebase.ecdsasig import verify_message
+
+        # 1. Recover public key from signature
+        try:
+            # Signature from Keychain is typically hex
+            sig_bytes = bytes.fromhex(signature)
+            recovered_pub_key_bytes = verify_message(sig_buffer, sig_bytes)
+            # Convert recovered bytes to Hive-style public key string (STM...)
+            recovered_pub_key_str = str(
+                PublicKey(recovered_pub_key_bytes.hex(), prefix="STM")
+            )
+        except Exception as e:
+            return HttpResponseForbidden(f"INVALID SIGNATURE OR BUFFER: {str(e)}")
+
+        # 2. Get the user's actual public posting key from the blockchain
+        acc = Account(username)
+        posting_auth = acc.get("posting", {})
+        public_keys = [k[0] for k in posting_auth.get("key_auths", [])]
+
+        if recovered_pub_key_str in public_keys:
+            request.session["hive_user"] = username
+            request.session.modified = True
+            return redirect("index")
+        else:
+            return HttpResponseForbidden(
+                f"SIGNATURE VERIFICATION FAILED. RECOVERED: {recovered_pub_key_str}"
+            )
+
+    except Exception as e:
+        return HttpResponseForbidden(f"HANDSHAKE ERROR: {str(e)}")
 
 
 def logout(request):
@@ -63,6 +110,14 @@ def set_theme(request, theme_name):
     request.session.modified = True
 
     next_url = request.GET.get("next", "/")
+
+    # SECURITY: Prevent Open Redirect (VULN-002)
+    if not url_has_allowed_host_and_scheme(
+        url=next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        next_url = "/"
 
     # Strip theme param from next_url if it exists to prevent infinite fighting
     url_parts = list(urllib.parse.urlparse(next_url))

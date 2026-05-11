@@ -259,7 +259,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "bleach", specifier = ">=6.3.0" },
-    { name = "django", specifier = ">=6.0.4" },
+    { name = "django", specifier = ">=6.0.5" },
     { name = "hive-nectar", specifier = ">=0.2.15" },
     { name = "markdown", specifier = ">=3.10.2" },
 ]
