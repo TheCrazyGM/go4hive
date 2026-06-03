@@ -19,7 +19,7 @@
 
 - **Language:** Python 3.14+
 - **Framework:** Django 6.x
-- **SDK:** [hive-nectar](https://github.com/thecrazygm/hive-nectar)
+- **SDK:** [hive-nectar](https://github.com/srbde/hive-nectar)
 - **Package Manager:** [uv](https://github.com/astral-sh/uv)
 - **Frontend:** Vanilla CSS & Lightweight Vanilla JS (Universal Keyboard Navigation)
 
@@ -102,5 +102,5 @@ This project is licensed under the MIT License.
 ## 🤝 Acknowledgments
 
 - Co-Authored by [thecrazygm](https://github.com/thecrazygm) and Antigravity CLI.
-- Built using the [hive-nectar](https://github.com/thecrazygm/hive-nectar) SDK.
+- Built using the [hive-nectar](https://github.com/srbde/hive-nectar) SDK.
 - Inspired by the classic Gopher protocol and retro BBS systems.
