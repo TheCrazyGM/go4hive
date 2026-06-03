@@ -27,6 +27,14 @@ class GopherViewTests(TestCase):
         self.assertContains(response, "Test Post")
 
     def test_about_loads(self):
+        import tomllib
+        from django.conf import settings
+
+        with open(settings.BASE_DIR / "pyproject.toml", "rb") as f:
+            version = tomllib.load(f)["project"]["version"]
+
         response = self.client.get(reverse("about"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "About Go4Hive")
+        self.assertContains(response, f"VERSION: {version}")
+        self.assertContains(response, "ANTIGRAVITY CLI")

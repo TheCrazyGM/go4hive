@@ -83,6 +83,6 @@ Visit `http://127.0.0.1:8888` in your browser.
 This project is licensed under the MIT License.
 
 ## 🤝 Acknowledgments
-- Co-Authored by [thecrazygm](https://github.com/thecrazygm) and Gemini CLI Agent.
+- Co-Authored by [thecrazygm](https://github.com/thecrazygm) and Antigravity CLI.
 - Built using the [hive-nectar](https://github.com/thecrazygm/hive-nectar) SDK.
 - Inspired by the classic Gopher protocol and retro BBS systems.
