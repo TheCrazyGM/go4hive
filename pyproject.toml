@@ -10,3 +10,6 @@ dependencies = [
   "hive-nectar>=0.2.15",
   "markdown>=3.10.2",
 ]
+
+[tool.uv.sources]
+hive-nectar = { git = "https://github.com/srbde/hive-nectar", rev = "main" }
