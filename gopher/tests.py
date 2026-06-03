@@ -6,9 +6,16 @@ from django.urls import reverse
 
 class GopherViewTests(TestCase):
     def test_index_loads(self):
+        import tomllib
+        from django.conf import settings
+
+        with open(settings.BASE_DIR / "pyproject.toml", "rb") as f:
+            version = tomllib.load(f)["project"]["version"]
+
         response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Go4Hive")
+        self.assertContains(response, f"Go4Hive v{version}")
 
     @patch("gopher.views.get_trending_posts")
     def test_trending_loads(self, mock_get_trending):

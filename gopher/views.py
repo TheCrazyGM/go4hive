@@ -26,6 +26,16 @@ from .services import (
 )
 
 
+def _get_version():
+    try:
+        pyproject_path = settings.BASE_DIR / "pyproject.toml"
+        with open(pyproject_path, "rb") as f:
+            data = tomllib.load(f)
+        return data.get("project", {}).get("version", "UNKNOWN")
+    except Exception:
+        return "UNKNOWN"
+
+
 def _get_base_context(request):
     """
     Helper to inject common context like random header and theme.
@@ -43,6 +53,7 @@ def _get_base_context(request):
         "current_theme": current_theme,
         "current_user": current_user,
         "full_path": request.get_full_path(),
+        "version": _get_version(),
     }
 
 
@@ -231,19 +242,8 @@ def profile(request, username):
     return render(request, "gopher/profile.html", context)
 
 
-def _get_version():
-    try:
-        pyproject_path = settings.BASE_DIR / "pyproject.toml"
-        with open(pyproject_path, "rb") as f:
-            data = tomllib.load(f)
-        return data.get("project", {}).get("version", "UNKNOWN")
-    except Exception:
-        return "UNKNOWN"
-
-
 def about(request):
     context = _get_base_context(request)
-    context["version"] = _get_version()
     return render(request, "gopher/about.html", context)
 
 

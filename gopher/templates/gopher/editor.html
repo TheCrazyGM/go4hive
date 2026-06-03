@@ -4,7 +4,7 @@
 {% block content %}
     <div id="editor-container" style="display: flex; flex-direction: column; height: 80vh;">
         <div id="editor-status" style="border-bottom: 1px solid var(--dim-color); padding-bottom: 5px; margin-bottom: 10px;">
-        <pre style="margin: 0;">GO4HIVE v0.2.0 - [NEW POST] - STATUS: <span id="buffer-status">READY</span></pre>
+        <pre style="margin: 0;">GO4HIVE v{{ version }} - [NEW POST] - STATUS: <span id="buffer-status">READY</span></pre>
             <div style="margin-top: 10px; display: flex; align-items: center;">
                 <label style="color: var(--dim-color); width: 70px; display: inline-block;">TITLE:</label>
                 <input type="text" id="post-title" style="background: transparent; border: none; border-bottom: 1px dashed var(--dim-color); color: var(--text-color); font-family: var(--font-family); flex-grow: 1; padding: 2px 5px; outline: none;" placeholder="Enter post title..." autofocus>
