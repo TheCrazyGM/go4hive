@@ -9,6 +9,7 @@ dependencies = [
   "django>=6.0.5",
   "hive-nectar>=0.2.15",
   "markdown>=3.10.2",
+  "uvicorn>=0.49.0",
 ]
 
 [tool.uv.sources]

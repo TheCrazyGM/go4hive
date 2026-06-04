@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-=iue*+gi6^(h@g56rw5m!471_&adbxt1es-5ppc%r+*d0*r^7l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["go4hive.crypto-dreamr.com", "localhost", "127.0.0.1", "[::1]"]
 
 
 # Application definition
