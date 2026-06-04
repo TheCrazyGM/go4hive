@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const cmdInput = document.getElementById('cmd-input');
     const terminalMsg = document.getElementById('terminal-msg');
-    const allLinks = Array.from(document.querySelectorAll('body a'));
+    const allLinks = Array.from(document.querySelectorAll('body a:not(#retro-modal a)'));
 
     // CURRENT_USER is expected to be defined globally in the template
     const user = window.HIVE_USER || '';
@@ -275,6 +275,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Global Key Listener ---
     document.addEventListener('keydown', (e) => {
+        const retroModal = document.getElementById('retro-modal');
+        if (retroModal && retroModal.style.display === 'flex') {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeVoteModal();
+            }
+            return;
+        }
+
         if (document.activeElement !== cmdInput && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
 
             if (e.key === ':' || e.key === '/') {
@@ -329,39 +338,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Retro Vote Modal Controller ---
+    const retroModal = document.getElementById('retro-modal');
+    const modalTarget = document.getElementById('modal-target');
+    const modalWeight = document.getElementById('modal-weight');
+    const modalSubmit = document.getElementById('modal-submit');
+    const modalCancel = document.getElementById('modal-cancel');
+
+    let currentVoteTarget = null;
+
+    window.openVoteModal = function(author, permlink) {
+        if (!user) {
+            printMsg('ERROR: YOU MUST LOG IN TO VOTE.', true);
+            return;
+        }
+        if (!window.hive_keychain) {
+            printMsg('HIVE KEYCHAIN EXTENSION NOT FOUND.', true);
+            return;
+        }
+        currentVoteTarget = { author, permlink };
+        modalTarget.innerText = `@${author}`;
+        modalWeight.value = '100';
+        retroModal.style.display = 'flex';
+        modalWeight.focus();
+        modalWeight.select();
+    };
+
+    window.closeVoteModal = function() {
+        if (retroModal) {
+            retroModal.style.display = 'none';
+        }
+        currentVoteTarget = null;
+    };
+
+    function submitVoteModal() {
+        if (!currentVoteTarget) return;
+        const weightInput = modalWeight.value;
+        const parsedWeight = parseInt(weightInput);
+        if (isNaN(parsedWeight) || parsedWeight < 1 || parsedWeight > 100) {
+            printMsg('ERROR: INVALID VOTE WEIGHT. MUST BE BETWEEN 1 AND 100.', true);
+            return;
+        }
+        const { author, permlink } = currentVoteTarget;
+        const voteWeight = parsedWeight * 100;
+
+        closeVoteModal();
+        printMsg(`INITIATING VOTE FOR @${author}...`);
+        window.hive_keychain.requestVote(user, permlink, author, voteWeight, (response) => {
+            if (response.success) {
+                printMsg(`SUCCESS: BROADCASTED ${parsedWeight}% VOTE.`);
+            } else {
+                printMsg(`VOTE FAILED: ${response.message}`, true);
+            }
+        });
+    }
+
+    if (modalSubmit) {
+        modalSubmit.addEventListener('click', (e) => {
+            e.preventDefault();
+            submitVoteModal();
+        });
+    }
+    if (modalCancel) {
+        modalCancel.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeVoteModal();
+        });
+    }
+
+    if (modalWeight) {
+        modalWeight.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitVoteModal();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeVoteModal();
+            }
+        });
+    }
+
     document.addEventListener('click', (e) => {
         const voteLink = e.target.closest('.vote-link');
         if (voteLink) {
             e.preventDefault();
-            if (!window.hive_keychain) {
-                printMsg('HIVE KEYCHAIN EXTENSION NOT FOUND.', true);
-                return;
-            }
-            if (!user) {
-                printMsg('ERROR: YOU MUST LOG IN TO VOTE.', true);
-                return;
-            }
             const author = voteLink.getAttribute('data-author');
             const permlink = voteLink.getAttribute('data-permlink');
-
-            const weightInput = prompt('ENTER VOTE WEIGHT (1-100%):', '100');
-            if (weightInput === null) return;
-
-            const parsedWeight = parseInt(weightInput);
-            if (isNaN(parsedWeight) || parsedWeight < 1 || parsedWeight > 100) {
-                printMsg('ERROR: INVALID VOTE WEIGHT. MUST BE BETWEEN 1 AND 100.', true);
-                return;
-            }
-
-            const voteWeight = parsedWeight * 100;
-            printMsg(`INITIATING VOTE FOR @${author}...`);
-            window.hive_keychain.requestVote(user, permlink, author, voteWeight, (response) => {
-                if (response.success) {
-                    printMsg(`SUCCESS: BROADCASTED ${parsedWeight}% VOTE.`);
-                } else {
-                    printMsg(`VOTE FAILED: ${response.message}`, true);
-                }
-            });
+            openVoteModal(author, permlink);
         }
     });
 });
