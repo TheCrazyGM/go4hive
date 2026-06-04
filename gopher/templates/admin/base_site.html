@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% subtitle %} | {{ title }}{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+  {% if user.is_staff %}
+    <div style="float: right; padding: 5px 15px; display: inline-block;">
+      <form action="{% url 'admin_clear_cache' %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" style="background: #ba2121; color: white; border: none; padding: 5px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Dump Cache</button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

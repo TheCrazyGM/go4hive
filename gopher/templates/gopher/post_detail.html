@@ -25,7 +25,7 @@
     <h3>Replies</h3>
     {% if replies %}
         {% for reply in replies %}
-            <div class="reply" style="margin-bottom: 20px; border-left: 2px solid var(--dim-color); padding-left: 15px;">
+            <div class="reply" style="margin-left: {{ reply.margin_left }}px; margin-bottom: 20px; border-left: 2px solid var(--dim-color); padding-left: 15px;">
                 <div style="color: var(--dim-color); font-size: 0.9em;">
                     <a href="/user/{{ reply.author }}/" style="color: var(--dim-color);">@{{ reply.author }}</a> | {{ reply.created }} | Votes: {{ reply.net_votes }}
                 </div>        <div class="reply-body">

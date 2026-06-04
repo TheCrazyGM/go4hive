@@ -31,13 +31,13 @@ ALLOWED_HOSTS = ["go4hive.crypto-dreamr.com", "localhost", "127.0.0.1", "[::1]"]
 # Application definition
 
 INSTALLED_APPS = [
+    "gopher",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "gopher",
 ]
 
 MIDDLEWARE = [
@@ -53,8 +53,11 @@ MIDDLEWARE = [
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-snowflake",
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/5",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
     }
 }
 

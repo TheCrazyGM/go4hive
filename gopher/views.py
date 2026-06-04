@@ -3,6 +3,7 @@ import tomllib
 import urllib.parse
 
 from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -281,3 +282,15 @@ def block_detail(request, block_num):
     context = _get_base_context(request)
     context["hive_block"] = hive_block
     return render(request, "gopher/block_detail.html", context)
+
+
+@require_POST
+@staff_member_required
+def admin_clear_cache(request):
+    from django.contrib import messages
+    from django.core.cache import cache
+
+    cache.clear()
+    messages.success(request, "CACHE DUMPED SUCCESSFULLY.")
+    referrer = request.META.get("HTTP_REFERER", "/admin/")
+    return redirect(referrer)

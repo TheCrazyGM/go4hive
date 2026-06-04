@@ -256,7 +256,7 @@ def get_post_details(authorperm):
         "tags": resolved_tags,
     }
 
-    replies = []
+    raw_replies = []
     for reply in c.get_replies():
         r_author = reply.get("author")
         if r_author in blacklist:
@@ -267,15 +267,53 @@ def get_post_details(authorperm):
         if r_votes is None:
             r_votes = len(reply.get("active_votes", []))
 
-        replies.append(
+        raw_replies.append(
             {
                 "author": r_author,
+                "permlink": reply.get("permlink"),
+                "parent_author": reply.get("parent_author"),
+                "parent_permlink": reply.get("parent_permlink"),
                 "body": render_content(reply.get("body")),
                 "created": reply.get("created"),
                 "net_votes": r_votes,
                 "authorperm": reply.get("authorperm"),
             }
         )
+
+    # Reconstruct comment tree structure and sort them depth-first
+    parent_map = {}
+    for r in raw_replies:
+        key = (r["parent_author"], r["parent_permlink"])
+        parent_map.setdefault(key, []).append(r)
+
+    for key in parent_map:
+        parent_map[key].sort(key=lambda x: x.get("created", ""))
+
+    replies = []
+    visited = set()
+
+    def traverse(author, permlink, depth):
+        children = parent_map.get((author, permlink), [])
+        for child in children:
+            child_key = (child["author"], child["permlink"])
+            if child_key in visited:
+                continue
+            visited.add(child_key)
+            child["indent_level"] = depth
+            child["margin_left"] = min(depth, 6) * 30
+            replies.append(child)
+            traverse(child["author"], child["permlink"], depth + 1)
+
+    traverse(post_data["author"], post_data["permlink"], 0)
+
+    # Handle any orphaned comments
+    for r in raw_replies:
+        r_key = (r["author"], r["permlink"])
+        if r_key not in visited:
+            r["indent_level"] = 0
+            r["margin_left"] = 0
+            replies.append(r)
+            visited.add(r_key)
 
     result = (post_data, replies)
     cache.set(cache_key, result, 300)  # 5 minutes

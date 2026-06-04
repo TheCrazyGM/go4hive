@@ -17,8 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from gopher.views import admin_clear_cache
 
 urlpatterns = [
+    path("admin/clear-cache/", admin_clear_cache, name="admin_clear_cache"),
     path("admin/", admin.site.urls),
     path("", include("gopher.urls")),
 ]

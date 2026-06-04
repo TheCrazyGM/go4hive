@@ -45,3 +45,27 @@ class GopherViewTests(TestCase):
         self.assertContains(response, "About Go4Hive")
         self.assertContains(response, f"VERSION: {version}")
         self.assertContains(response, "ANTIGRAVITY CLI")
+
+    def test_clear_cache_anonymous(self):
+        response = self.client.get(reverse("admin_clear_cache"))
+        self.assertEqual(response.status_code, 405)
+
+        response = self.client.post(reverse("admin_clear_cache"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response.url)
+
+    def test_clear_cache_staff(self):
+        from django.contrib.auth.models import User
+        from django.core.cache import cache
+
+        staff_user = User.objects.create_user(
+            username="staff", password="pwd", is_staff=True
+        )
+        self.client.force_login(staff_user)
+
+        cache.set("test_key", "test_val")
+        self.assertEqual(cache.get("test_key"), "test_val")
+
+        response = self.client.post(reverse("admin_clear_cache"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(cache.get("test_key"))
