@@ -69,3 +69,14 @@ class GopherViewTests(TestCase):
         response = self.client.post(reverse("admin_clear_cache"))
         self.assertEqual(response.status_code, 302)
         self.assertIsNone(cache.get("test_key"))
+
+    def test_admin_index_loads_for_staff(self):
+        from django.contrib.auth.models import User
+
+        staff_user = User.objects.create_user(
+            username="staff2", password="pwd", is_staff=True
+        )
+        self.client.force_login(staff_user)
+        response = self.client.get("/admin/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dump Cache")
