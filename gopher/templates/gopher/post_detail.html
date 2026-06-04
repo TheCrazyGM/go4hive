@@ -4,7 +4,7 @@
     <div class="post-header" data-author="{{ post.author }}" data-permlink="{{ post.permlink }}">
         <h2>{{ post.title }}</h2>
         <div style="color: var(--dim-color); margin-bottom: 20px;">
-            BY: <a href="/user/{{ post.author }}" style="color: var(--dim-color);">@{{ post.author }}</a> | CREATED: {{ post.created }} | VOTES: {{ post.net_votes }} | PAYOUT: ${{ post.payout|stringformat:".2f" }}
+            BY: <a href="/user/{{ post.author }}" style="color: var(--dim-color);">@{{ post.author }}</a> | CREATED: {{ post.created }} | VOTES: {{ post.net_votes }} | PAYOUT: ${{ post.payout|stringformat:".2f" }} | [ <a href="#" class="vote-link" data-author="{{ post.author }}" data-permlink="{{ post.permlink }}" style="color: var(--text-color); text-decoration: none;">VOTE</a> ]
         </div>
     </div>
 
@@ -27,7 +27,7 @@
         {% for reply in replies %}
             <div class="reply" style="margin-left: {{ reply.margin_left }}px; margin-bottom: 20px; border-left: 2px solid var(--dim-color); padding-left: 15px;">
                 <div style="color: var(--dim-color); font-size: 0.9em;">
-                    <a href="/user/{{ reply.author }}/" style="color: var(--dim-color);">@{{ reply.author }}</a> | {{ reply.created }} | Votes: {{ reply.net_votes }}
+                    <a href="/user/{{ reply.author }}/" style="color: var(--dim-color);">@{{ reply.author }}</a> | {{ reply.created }} | Votes: {{ reply.net_votes }} | [ <a href="#" class="vote-link" data-author="{{ reply.author }}" data-permlink="{{ reply.permlink }}" style="color: var(--text-color); text-decoration: none;">VOTE</a> ]
                 </div>        <div class="reply-body">
                     {{ reply.body|safe }}
                 </div>

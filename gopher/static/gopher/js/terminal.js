@@ -328,4 +328,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    document.addEventListener('click', (e) => {
+        const voteLink = e.target.closest('.vote-link');
+        if (voteLink) {
+            e.preventDefault();
+            if (!window.hive_keychain) {
+                printMsg('HIVE KEYCHAIN EXTENSION NOT FOUND.', true);
+                return;
+            }
+            if (!user) {
+                printMsg('ERROR: YOU MUST LOG IN TO VOTE.', true);
+                return;
+            }
+            const author = voteLink.getAttribute('data-author');
+            const permlink = voteLink.getAttribute('data-permlink');
+
+            const weightInput = prompt('ENTER VOTE WEIGHT (1-100%):', '100');
+            if (weightInput === null) return;
+
+            const parsedWeight = parseInt(weightInput);
+            if (isNaN(parsedWeight) || parsedWeight < 1 || parsedWeight > 100) {
+                printMsg('ERROR: INVALID VOTE WEIGHT. MUST BE BETWEEN 1 AND 100.', true);
+                return;
+            }
+
+            const voteWeight = parsedWeight * 100;
+            printMsg(`INITIATING VOTE FOR @${author}...`);
+            window.hive_keychain.requestVote(user, permlink, author, voteWeight, (response) => {
+                if (response.success) {
+                    printMsg(`SUCCESS: BROADCASTED ${parsedWeight}% VOTE.`);
+                } else {
+                    printMsg(`VOTE FAILED: ${response.message}`, true);
+                }
+            });
+        }
+    });
 });
