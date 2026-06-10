@@ -292,5 +292,5 @@ def admin_clear_cache(request):
 
     cache.clear()
     messages.success(request, "CACHE DUMPED SUCCESSFULLY.")
-    referrer = request.META.get("HTTP_REFERER", "/admin/")
+    referrer = request.headers.get("referer", "/admin/")
     return redirect(referrer)
