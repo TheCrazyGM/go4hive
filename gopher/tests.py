@@ -1,7 +1,9 @@
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
+from django.http import HttpResponse
+from core.middleware import BrowserCheckMiddleware
 
 
 class GopherViewTests(TestCase):
@@ -80,3 +82,60 @@ class GopherViewTests(TestCase):
         response = self.client.get("/admin/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Dump Cache")
+
+
+class BrowserCheckMiddlewareTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.get_response = lambda req: HttpResponse("SUCCESS")
+        self.middleware = BrowserCheckMiddleware(self.get_response)
+
+    def test_bypass_whitelist(self):
+        # Whitelisted paths should bypass the check and return SUCCESS
+        for path in ["/static/gopher/css/terminal.css", "/robots.txt", "/favicon.ico"]:
+            request = self.factory.get(path)
+            with patch("sys.argv", ["manage.py"]):
+                response = self.middleware(request)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content, b"SUCCESS")
+
+    def test_missing_cookie_serves_challenge(self):
+        # A normal path without cookie should serve the challenge page
+        request = self.factory.get("/")
+        with patch("sys.argv", ["manage.py"]):
+            response = self.middleware(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Go4Hive Security Check")
+        self.assertContains(response, "TESTING JAVASCRIPT CAPABILITIES")
+        self.assertNotEqual(response.content, b"SUCCESS")
+
+    def test_existing_cookie_bypasses_challenge(self):
+        # A request with d_sensor cookie should bypass the challenge and return SUCCESS
+        request = self.factory.get("/")
+        request.COOKIES["d_sensor"] = "1234567890"
+        with patch("sys.argv", ["manage.py"]):
+            response = self.middleware(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"SUCCESS")
+
+    def test_theme_color_applied(self):
+        # Test that proper theme variables are rendered in the HTML for each theme
+        themes = {
+            "green": ("#00ff41", "#008f11", "#003b00"),
+            "amber": ("#ffb000", "#a37200", "#3b2a00"),
+            "white": ("#e0e0e0", "#888888", "#333333"),
+        }
+        for theme_name, (text, dim, highlight) in themes.items():
+            request = self.factory.get("/")
+
+            class DummySession(dict):
+                pass
+
+            request.session = DummySession({"theme": theme_name})
+            with patch("sys.argv", ["manage.py"]):
+                response = self.middleware(request)
+            self.assertEqual(response.status_code, 200)
+            html = response.content.decode("utf-8")
+            self.assertIn(f"--text-color: {text}", html)
+            self.assertIn(f"--dim-color: {dim}", html)
+            self.assertIn(f"--highlight-color: {highlight}", html)
