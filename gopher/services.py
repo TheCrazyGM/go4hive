@@ -328,7 +328,7 @@ def extract_payout_amount(value):
     if isinstance(value, str):
         try:
             return float(value.split()[0])
-        except ValueError, IndexError:
+        except (ValueError, IndexError):
             return 0.0
     if isinstance(value, (int, float)):
         return float(value)
@@ -355,7 +355,7 @@ def format_nai_asset(value):
         try:
             amount_float = int(amount_str) / (10**precision)
             return f"{amount_float:.{precision}f} {symbol}"
-        except ValueError, TypeError:
+        except (ValueError, TypeError):
             return str(value)
 
     return str(value)
@@ -446,7 +446,9 @@ def get_account_feed(username, limit=20):
     try:
         acc = Account(username)
         # get_feed() returns posts from people the user follows
-        return _process_discussions(acc.get_feed(limit=limit))
+        data = _process_discussions(acc.get_feed(limit=limit))
+        cache.set(cache_key, data, 300)
+        return data
     except Exception as e:
         logger.error(f"Error fetching feed for {username}: {e}")
         return []
